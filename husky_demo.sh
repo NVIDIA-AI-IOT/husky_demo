@@ -41,7 +41,7 @@ ISAAC_SIM_PATH="$HOME/.local/share/ov/pkg/isaac_sim-$ISAAC_SIM_VERSION"
 ISAAC_SIM_ROS_PATH="$ISAAC_SIM_PATH/ros2_workspace"
 ISAAC_SIM_ROS_SRC_PATH="$ISAAC_SIM_ROS_PATH/src"
 
-ISAAC_DEMO_SIMULATION_PATH="$ISAAC_DEMO_LOCAL_PATH/scripts/start_isaac_sim.py"
+ISAAC_DEMO_SIMULATION_PATH="$ISAAC_DEMO_LOCAL_PATH/scripts/husky_isaac_sim.py"
 
 usage()
 {
@@ -115,7 +115,7 @@ workstation_install()
     echo "   ${green}Path:${reset} $ISAAC_DEMO_SIMULATION_PATH"
     # source /opt/ros/foxy/setup.bash
     echo ">>> $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH"
-    # $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH
+    $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH
 
 }
 

@@ -45,6 +45,8 @@ from omni.isaac.core_nodes.scripts.utils import set_target_prims
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
 
+simulation_app.update()
+
 # Locate assets root folder to load sample
 assets_root_path = nucleus.get_assets_root_path()
 if assets_root_path is None:
@@ -109,7 +111,7 @@ class IsaacWorld():
 
 class RobotLoader(Node):
     
-    def __init__(self, isaac_world, namespace="nanosaur"):
+    def __init__(self, isaac_world, namespace=""):
         super().__init__("robot_loader", namespace=namespace)
         # Load isaac_world
         self.namespace = namespace
@@ -130,7 +132,7 @@ class RobotLoader(Node):
         import_config.fix_base = False
         import_config.distance_scale = 1
 
-        # Import URDF, stage_path contains the path the path to the usd prim in the stage.
+        # Import URDF, stage_path contains the path to the usd prim in the stage.
         # extension_path = get_extension_path_from_name("omni.isaac.urdf")
         status, stage_path = commands.execute(
             "URDFParseAndImportFile",
@@ -145,7 +147,7 @@ class RobotLoader(Node):
         print(f"Load robot")
         robot_urdf = msg.data
         #print(robot_urdf)
-        robot_name = "nanosaur"
+        robot_name = "husky"
         text_file = open(PATH_LOCAL_URDF_FOLDER, "w")
         n = text_file.write(robot_urdf)
         text_file.close()
