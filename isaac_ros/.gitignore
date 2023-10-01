@@ -9,3 +9,6 @@ src/ros-foxglove-bridge
 src/husky
 src/navigation
 src/xacro
+src/teleop_twist_keyboard
+# internal data
+host_path

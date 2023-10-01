@@ -105,6 +105,10 @@ workstation_install()
 
     unset LD_LIBRARY_PATH
 
+    # Load host path, this is used to share the same path between host and container for Isaac SIM
+    # this is required to load the same urdf meshes
+    echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
+
     echo " - ${green}Run Isaac ROS and Husky${reset}"
     cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
     gnome-terminal -e "bash scripts/run_dev.sh $ISAAC_ROS_PATH"

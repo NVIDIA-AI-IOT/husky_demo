@@ -30,10 +30,10 @@ ISAAC_DEMO_PKG_PATH="$LOCAL_PATH/src/husky_isaac_sim"
 
 run_desktop()
 {
-    #if [ ! -d $LOCAL_PATH/install ] ; then
+    if [ ! -d $LOCAL_PATH/install ] ; then
         echo " - ${green}Build Isaac ROS${reset}"
         colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot
-    #fi
+    fi
     
     echo " - ${green}Run rviz2${reset}"
     # source workspace

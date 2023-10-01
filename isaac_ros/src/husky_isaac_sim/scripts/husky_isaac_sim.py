@@ -32,11 +32,11 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
 simulation_app = SimulationApp(CONFIG)
 
-import omni.graph.core as og
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils import nucleus
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.stage import is_stage_loading
+import omni.graph.core as og
 from omni.kit import commands
 from omni import usd
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
@@ -47,19 +47,11 @@ enable_extension("omni.isaac.ros2_bridge")
 
 simulation_app.update()
 
-# Locate assets root folder to load sample
-assets_root_path = nucleus.get_assets_root_path()
-if assets_root_path is None:
-    carb.log_error("Could not find Isaac Sim assets folder")
-    simulation_app.close()
-    sys.exit()
-
-simulation_app.update()
-
 # Note that this is not the system level rclpy, but one compiled for omniverse
+import rclpy
 from std_msgs.msg import String
 from rclpy.node import Node
-import rclpy
+
 
 PATH_LOCAL_URDF_FOLDER="/tmp/robot.urdf"
 
@@ -70,6 +62,13 @@ class IsaacWorld():
         # Setting up scene
         if stage_path:
             self.simulation_context = SimulationContext(stage_units_in_meters=1.0)
+            # Locate assets root folder to load sample
+            assets_root_path = nucleus.get_assets_root_path()
+            if assets_root_path is None:
+                carb.log_error("Could not find Isaac Sim assets folder")
+                simulation_app.close()
+                sys.exit()
+            # Load USD stage
             usd_path = assets_root_path + stage_path
             usd.get_context().open_stage(usd_path, None)
         else:
@@ -141,6 +140,75 @@ class RobotLoader(Node):
         )
         # Wait a step
         self.isaac_world.wait_step_reload()
+        
+        # Creating a action graph with ROS component nodes
+        # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_ros2_python.html
+        # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_ros2_turtlebot.html#build-the-graph
+        try:
+            og.Controller.edit(
+                {
+                    "graph_path": f"/{robot_name}/ActionGraph",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND
+                },
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ROS2Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                        ("ROS2SubscribeTwist", "omni.isaac.ros2_bridge.ROS2SubscribeTwist"),
+                        ("scale_to_from_stage_units", "omni.isaac.core_nodes.OgnIsaacScaleToFromStageUnit"),
+                        ("break_3_vector_01", "omni.graph.nodes.BreakVector3"),
+                        ("break_3_vector_02", "omni.graph.nodes.BreakVector3"),
+                        ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
+                        ("ConstantToken_01", "omni.graph.nodes.ConstantToken"),
+                        ("ConstantToken_02", "omni.graph.nodes.ConstantToken"),
+                        ("ConstantToken_03", "omni.graph.nodes.ConstantToken"),
+                        ("ConstantToken_04", "omni.graph.nodes.ConstantToken"),
+                        ("MakeArray", "omni.graph.nodes.MakeArray"),
+                        ("IsaacArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "ROS2SubscribeTwist.inputs:execIn"),
+                        ("ROS2Context.outputs:context", "ROS2SubscribeTwist.inputs:context"),
+                        ("ROS2SubscribeTwist.outputs:angularVelocity", "break_3_vector_01.inputs:tuple"),
+                        ("ROS2SubscribeTwist.outputs:linearVelocity", "scale_to_from_stage_units.inputs:value"),
+                        ("scale_to_from_stage_units.outputs:result", "break_3_vector_02.inputs:tuple"),
+                        ("ROS2SubscribeTwist.outputs:execOut", "DifferentialController.inputs:execIn"),
+                        ("break_3_vector_01.outputs:z", "DifferentialController.inputs:angularVelocity"),
+                        ("break_3_vector_02.outputs:x", "DifferentialController.inputs:linearVelocity"),
+                        ("OnPlaybackTick.outputs:tick", "IsaacArticulationController.inputs:execIn"),
+                        ("DifferentialController.outputs:velocityCommand", "IsaacArticulationController.inputs:velocityCommand"),
+                        ("ConstantToken_01.inputs:value", "MakeArray.inputs:a"),
+                        ("ConstantToken_02.inputs:value", "MakeArray.inputs:b"),
+                        ("ConstantToken_03.inputs:value", "MakeArray.inputs:c"),
+                        ("ConstantToken_04.inputs:value", "MakeArray.inputs:d"),
+                        ("MakeArray.outputs:array", "IsaacArticulationController.inputs:jointNames"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        # Assigning a Domain ID of 1 to Context node
+                        ("ROS2Context.inputs:domain_id", 0),
+                        # Assigning topic name to clock publisher
+                        ("ROS2SubscribeTwist.inputs:topicName", "/cmd_vel"),
+                        # Assigning Differential controller configuration
+                        #("DifferentialController.inputs:maxLinearSpeed", 10000.0),
+                        ("DifferentialController.inputs:wheelDistance", 0.512),
+                        ("DifferentialController.inputs:wheelRadius", 0.1651),
+                        # Assign Articulation controller configuration
+                        ("IsaacArticulationController.inputs:usePath", False),
+                        # Assigning topic name to clock publisher
+                        ("ConstantToken_01.inputs:value", "rear_left_wheel_joint"),
+                        ("ConstantToken_02.inputs:value", "rear_right_wheel_joint"),
+                        ("ConstantToken_03.inputs:value", "front_left_wheel_joint"),
+                        ("ConstantToken_04.inputs:value", "front_right_wheel_joint"),
+                    ]
+                },
+            )
+        except Exception as e:
+            print(e)
+        
+        HUSKY_STAGE_PATH=f"/{robot_name}/base_link"
+        # Setting the /Franka target prim to Subscribe JointState node
+        set_target_prims(primPath=f"/{robot_name}/ActionGraph/IsaacArticulationController", targetPrimPaths=[HUSKY_STAGE_PATH])
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message

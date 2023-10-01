@@ -42,12 +42,16 @@ def generate_launch_description():
 
     # Get URDF via xacro
     xacro_path = PathJoinSubstitution([husky_isaac_sim, "urdf", "husky.isaac.xacro"])
-    path_meshes = '/home/rbonghi/husky_demo/isaac_ros/src/husky/husky_description/meshes'
+    
+    # Load host path
+    host_path = open("/workspaces/isaac_ros-dev/src/host_path", 'r').readline().rstrip('\n')
+    path_meshes = f"{host_path}/isaac_ros/src/husky/husky_description/meshes"
 
     # Launch Robot State Publisher
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
+        output='screen',
         parameters=[{'use_sim_time': use_sim_time,
                      'robot_description': Command(
                          [
