@@ -29,7 +29,7 @@ RVIZ_RUN=false
 FOXGLOVE_RUN=false
 # Requested version to install this set of demo on Jetson
 ISAAC_DEMO_ROS_L4T="35.3" # 35.1 = Jetpack 5.0.2
-ISAAC_SIM_VERSION="2022.2.1"  # Isaac SIM version
+ISAAC_SIM_VERSION="prod-isaac_sim-2022.2.1"  # Isaac SIM version
 
 # DO NOT EDIT
 
@@ -37,7 +37,7 @@ PROJECT_PATH=$(pwd)
 ISAAC_ROS_PATH="$PROJECT_PATH/isaac_ros"
 ISAAC_ROS_SRC_PATH="$ISAAC_ROS_PATH/src"
 ISAAC_DEMO_LOCAL_PATH="$ISAAC_ROS_SRC_PATH/husky_isaac_sim"
-ISAAC_SIM_PATH="$HOME/.local/share/ov/pkg/isaac_sim-$ISAAC_SIM_VERSION"
+ISAAC_SIM_PATH="$HOME/.local/share/ov/pkg/$ISAAC_SIM_VERSION"
 ISAAC_SIM_ROS_PATH="$ISAAC_SIM_PATH/ros2_workspace"
 ISAAC_SIM_ROS_SRC_PATH="$ISAAC_SIM_ROS_PATH/src"
 
@@ -111,7 +111,7 @@ workstation_install()
 
     echo " - ${green}Run Isaac ROS and Husky${reset}"
     cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
-    gnome-terminal -e "bash scripts/run_dev.sh $ISAAC_ROS_PATH"
+    gnome-terminal -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
 
     # https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox/blob/main/docs/tutorial-isaac-sim.md
     # Run Isaac ROS with Carter in a Warehouse

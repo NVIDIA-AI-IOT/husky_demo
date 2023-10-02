@@ -23,17 +23,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import carb
 from omni.isaac.kit import SimulationApp
+import sys
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
+BACKGROUND_STAGE_PATH = "/background"
+BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
 
-# Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
 simulation_app = SimulationApp(CONFIG)
 
 from omni.isaac.core import World, SimulationContext
-from omni.isaac.core.utils import nucleus
+from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import is_stage_loading
 import omni.graph.core as og
@@ -41,15 +42,15 @@ from omni.kit import commands
 from omni import usd
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
-
-# enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+# enable ROS bridge extension
+enable_extension("omni.isaac.ros2_bridge-humble")
 
 simulation_app.update()
 
 # Note that this is not the system level rclpy, but one compiled for omniverse
 import rclpy
 from std_msgs.msg import String
+from geometry_msgs.msg import Twist
 from rclpy.node import Node
 
 
@@ -68,14 +69,13 @@ class IsaacWorld():
                 carb.log_error("Could not find Isaac Sim assets folder")
                 simulation_app.close()
                 sys.exit()
-            # Load USD stage
-            usd_path = assets_root_path + stage_path
-            usd.get_context().open_stage(usd_path, None)
+            # Loading the simple_room environment
+            stage.add_reference_to_stage(assets_root_path + stage_path, BACKGROUND_STAGE_PATH)
         else:
             self.simulation_context = World(stage_units_in_meters=1.0)
             self.simulation_context.scene.add_default_ground_plane()
-        # need to initialize physics getting any articulation..etc
-        self.simulation_context.initialize_physics()
+            # need to initialize physics getting any articulation..etc
+            self.simulation_context.initialize_physics()
         # Wait two frames so that stage starts loading
         simulation_app.update()
         simulation_app.update()
@@ -118,6 +118,8 @@ class RobotLoader(Node):
         # setup the ROS2 subscriber here
         self.ros_sub = self.create_subscription(String, "robot_description", self.callback_description, 1)
         self.ros_sub  # prevent unused variable warning
+        #self.ros_sub_vel = self.create_subscription(Twist, "cmd_vel", self.callback_test, 1)
+        #self.ros_sub_vel  # prevent unused variable warning
         # Node started
         self.get_logger().info("Robot loader start")
 
@@ -145,11 +147,11 @@ class RobotLoader(Node):
         # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_ros2_python.html
         # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_ros2_turtlebot.html#build-the-graph
         try:
-            og.Controller.edit(
+            (ros_camera_graph, _, _, _) = og.Controller.edit(
                 {
                     "graph_path": f"/{robot_name}/ActionGraph",
-                    "evaluator_name": "push",
-                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND
+                    "evaluator_name": "execution",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION
                 },
                 {
                     og.Controller.Keys.CREATE_NODES: [
@@ -160,11 +162,14 @@ class RobotLoader(Node):
                         ("break_3_vector_01", "omni.graph.nodes.BreakVector3"),
                         ("break_3_vector_02", "omni.graph.nodes.BreakVector3"),
                         ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
+                        ("array_index_01", "omni.graph.nodes.ArrayIndex"),
+                        ("array_index_02", "omni.graph.nodes.ArrayIndex"),
                         ("ConstantToken_01", "omni.graph.nodes.ConstantToken"),
                         ("ConstantToken_02", "omni.graph.nodes.ConstantToken"),
                         ("ConstantToken_03", "omni.graph.nodes.ConstantToken"),
                         ("ConstantToken_04", "omni.graph.nodes.ConstantToken"),
                         ("MakeArray", "omni.graph.nodes.MakeArray"),
+                        ("MakeArray_02", "omni.graph.nodes.MakeArray"),
                         ("IsaacArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                     ],
                     og.Controller.Keys.CONNECT: [
@@ -177,7 +182,14 @@ class RobotLoader(Node):
                         ("break_3_vector_01.outputs:z", "DifferentialController.inputs:angularVelocity"),
                         ("break_3_vector_02.outputs:x", "DifferentialController.inputs:linearVelocity"),
                         ("OnPlaybackTick.outputs:tick", "IsaacArticulationController.inputs:execIn"),
-                        ("DifferentialController.outputs:velocityCommand", "IsaacArticulationController.inputs:velocityCommand"),
+                        ("DifferentialController.outputs:velocityCommand", "array_index_01.inputs:array"),
+                        ("DifferentialController.outputs:velocityCommand", "array_index_02.inputs:array"),
+                        ("array_index_01.outputs:value", "MakeArray_02.inputs:a"),
+                        ("array_index_01.outputs:value", "MakeArray_02.inputs:c"),
+                        ("array_index_02.outputs:value", "MakeArray_02.inputs:b"),
+                        ("array_index_02.outputs:value", "MakeArray_02.inputs:d"),
+                        ("MakeArray_02.outputs:array", "IsaacArticulationController.inputs:velocityCommand"),
+                        # ("DifferentialController.outputs:velocityCommand", "IsaacArticulationController.inputs:velocityCommand"),
                         ("ConstantToken_01.inputs:value", "MakeArray.inputs:a"),
                         ("ConstantToken_02.inputs:value", "MakeArray.inputs:b"),
                         ("ConstantToken_03.inputs:value", "MakeArray.inputs:c"),
@@ -190,11 +202,16 @@ class RobotLoader(Node):
                         # Assigning topic name to clock publisher
                         ("ROS2SubscribeTwist.inputs:topicName", "/cmd_vel"),
                         # Assigning Differential controller configuration
-                        #("DifferentialController.inputs:maxLinearSpeed", 10000.0),
+                        ("DifferentialController.inputs:maxLinearSpeed", 10000.0),
                         ("DifferentialController.inputs:wheelDistance", 0.512),
                         ("DifferentialController.inputs:wheelRadius", 0.1651),
                         # Assign Articulation controller configuration
                         ("IsaacArticulationController.inputs:usePath", False),
+                        # Set size array
+                        ("array_index_01.inputs:index", 0),
+                        ("array_index_02.inputs:index", 1),
+                        ("MakeArray.inputs:arraySize", 4),
+                        ("MakeArray_02.inputs:arraySize", 4),
                         # Assigning topic name to clock publisher
                         ("ConstantToken_01.inputs:value", "rear_left_wheel_joint"),
                         ("ConstantToken_02.inputs:value", "rear_right_wheel_joint"),
@@ -209,6 +226,9 @@ class RobotLoader(Node):
         HUSKY_STAGE_PATH=f"/{robot_name}/base_link"
         # Setting the /Franka target prim to Subscribe JointState node
         set_target_prims(primPath=f"/{robot_name}/ActionGraph/IsaacArticulationController", targetPrimPaths=[HUSKY_STAGE_PATH])
+
+        # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
+        # og.Controller.evaluate_sync(ros_camera_graph)
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
@@ -226,9 +246,9 @@ class RobotLoader(Node):
 if __name__ == "__main__":
     rclpy.init()
     # Isaac SIM world
-    isaac_world = IsaacWorld()
+    isaac_world = IsaacWorld()#BACKGROUND_USD_PATH)
     # Start simulation
-    isaac_world.start_simulation()
+    #isaac_world.start_simulation()
     # Initialize robot loader
     robot_loader = RobotLoader(isaac_world)
     # Run simulation
