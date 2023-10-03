@@ -37,12 +37,9 @@ from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import is_stage_loading
-# import omni.graph.core as og
 from omni.kit import commands
-# from omni import usd
-# from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
-from husky_action_graphs import build_differential_controller_graph
+from husky_action_graphs import build_differential_controller_graph, build_camera_graph
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros2_bridge-humble")
@@ -145,6 +142,11 @@ class RobotLoader(Node):
         self.isaac_world.wait_step_reload()
         # Build differential controller graph
         build_differential_controller_graph(robot_name)
+        # Build camera graph
+        # Options: raw, depth
+        type_output = "raw"
+        build_camera_graph(robot_name, type_output)
+        simulation_app.update()
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
@@ -162,9 +164,9 @@ class RobotLoader(Node):
 if __name__ == "__main__":
     rclpy.init()
     # Isaac SIM world
-    isaac_world = IsaacWorld()#BACKGROUND_USD_PATH)
+    isaac_world = IsaacWorld(BACKGROUND_USD_PATH)
     # Start simulation
-    #isaac_world.start_simulation()
+    isaac_world.start_simulation()
     # Initialize robot loader
     robot_loader = RobotLoader(isaac_world)
     # Run simulation

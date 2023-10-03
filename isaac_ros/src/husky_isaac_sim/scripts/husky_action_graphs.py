@@ -166,10 +166,10 @@ def build_differential_controller_graph(robot_name):
                     ("OnPlaybackTick.outputs:tick", "IsaacArticulationController.inputs:execIn"),
                     ("DifferentialController.outputs:velocityCommand", "array_index_01.inputs:array"),
                     ("DifferentialController.outputs:velocityCommand", "array_index_02.inputs:array"),
-                    ("array_index_01.outputs:value", "MakeArray_02.inputs:a"),
                     ("array_index_01.outputs:value", "MakeArray_02.inputs:c"),
-                    ("array_index_02.outputs:value", "MakeArray_02.inputs:b"),
+                    ("array_index_01.outputs:value", "MakeArray_02.inputs:a"),
                     ("array_index_02.outputs:value", "MakeArray_02.inputs:d"),
+                    ("array_index_02.outputs:value", "MakeArray_02.inputs:b"),
                     ("MakeArray_02.outputs:array", "IsaacArticulationController.inputs:velocityCommand"),
                     # ("DifferentialController.outputs:velocityCommand", "IsaacArticulationController.inputs:velocityCommand"),
                     ("ConstantToken_01.inputs:value", "MakeArray.inputs:a"),
@@ -195,10 +195,10 @@ def build_differential_controller_graph(robot_name):
                     ("MakeArray.inputs:arraySize", 4),
                     ("MakeArray_02.inputs:arraySize", 4),
                     # Assigning topic name to clock publisher
-                    ("ConstantToken_01.inputs:value", "rear_left_wheel_joint"),
-                    ("ConstantToken_02.inputs:value", "rear_right_wheel_joint"),
-                    ("ConstantToken_03.inputs:value", "front_left_wheel_joint"),
-                    ("ConstantToken_04.inputs:value", "front_right_wheel_joint"),
+                    ("ConstantToken_01.inputs:value", "rear_right_wheel_joint"),
+                    ("ConstantToken_02.inputs:value", "rear_left_wheel_joint"),
+                    ("ConstantToken_03.inputs:value", "front_right_wheel_joint"),
+                    ("ConstantToken_04.inputs:value", "front_left_wheel_joint"),
                 ]
             },
         )
