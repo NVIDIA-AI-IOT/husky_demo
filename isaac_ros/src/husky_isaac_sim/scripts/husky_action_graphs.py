@@ -25,10 +25,75 @@
 
 import omni
 import omni.graph.core as og
+from omni.isaac.core.utils import stage
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf, UsdGeom
+from omni.isaac.core.utils.prims import set_targets
 
-def build_camera_graph(robot_name):
+def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, camera_name):
+    
+    ros_camera_graph_path = f"/{robot_name}/ROS_CameraGraph_{camera_name}"
+    viewport_name = f"Viewport{number_camera}"
+    if camera_name == "depth":
+        type_camera = "depth"
+    else:
+        type_camera = "rgb"
+    
+    # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
+    keys = og.Controller.Keys
+    (ros_camera_graph, _, _, _) = og.Controller.edit(
+        {
+            "graph_path": ros_camera_graph_path,
+            "evaluator_name": "push",
+            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+        },
+        {
+            keys.CREATE_NODES: [
+                ("OnTick", "omni.graph.action.OnTick"),
+                ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
+                ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                ("cameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+            ],
+            keys.CONNECT: [
+                ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                ("createViewport.outputs:execOut", "setViewportResolution.inputs:execIn"),
+                ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                ("createViewport.outputs:viewport", "setViewportResolution.inputs:viewport"),
+                ("setViewportResolution.outputs:execOut", "setCamera.inputs:execIn"),
+                ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+                ("setCamera.outputs:execOut", "cameraHelper.inputs:execIn"),
+                ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+                ("getRenderProduct.outputs:renderProductPath", "cameraHelper.inputs:renderProductPath"),
+                ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+            ],
+            keys.SET_VALUES: [
+                ("createViewport.inputs:name", viewport_name),
+                ("createViewport.inputs:viewportId", number_camera),
+                ("setViewportResolution.inputs:width", 640),
+                ("setViewportResolution.inputs:height", 480),
+                ("cameraHelper.inputs:frameId", f"{camera_frame}"),
+                ("cameraHelper.inputs:topicName", f"/{robot_name}/d435/{camera_name}/image_raw"),
+                ("cameraHelper.inputs:type", f"{type_camera}"),
+                ("cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
+                ("cameraHelperInfo.inputs:topicName", f"/{robot_name}/d435/{camera_name}/camera_info"),
+                ("cameraHelperInfo.inputs:type", "camera_info"),
+            ],
+        },
+    )
+
+    set_targets(
+        prim=stage.get_current_stage().GetPrimAtPath(ros_camera_graph_path + "/setCamera"),
+        attribute="inputs:cameraPrim",
+        target_prim_paths=[camera_stage_path],
+    )
+
+
+def build_camera_graph(robot_name,type_output):
+    
     camera_color_stage_path = f"/{robot_name}/camera_color_optical_frame/camera_color"
     # Creating a Camera prim
     camera_color_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_color_stage_path, "Camera"))
@@ -49,7 +114,15 @@ def build_camera_graph(robot_name):
     xform_api = UsdGeom.XformCommonAPI(camera_infra2_prim)
     xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
     xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    
+    # Create rgb camera
+    create_camera(robot_name, 1, "camera_color_optical_frame", camera_color_stage_path, "rgb")
+    # Load other cameras
+    if type_output == "depth":
+        create_camera(robot_name, 2, "camera_infra1_optical_frame", camera_infra1_stage_path, "depth")
+    elif type_output == "raw":
+        create_camera(robot_name, 2, "camera_infra1_optical_frame", camera_infra1_stage_path, "infra1")
+        create_camera(robot_name, 3, "camera_infra2_optical_frame", camera_infra1_stage_path, "infra2")
+
 
 def build_differential_controller_graph(robot_name):   
     # Creating a action graph with ROS component nodes
