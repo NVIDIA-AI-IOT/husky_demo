@@ -37,10 +37,12 @@ from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import is_stage_loading
-import omni.graph.core as og
+# import omni.graph.core as og
 from omni.kit import commands
-from omni import usd
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
+# from omni import usd
+# from omni.isaac.core_nodes.scripts.utils import set_target_prims
+
+from husky_action_graphs import build_differential_controller_graph
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros2_bridge-humble")
@@ -107,7 +109,6 @@ class IsaacWorld():
         self.simulation_context.stop()
         simulation_app.close()
 
-
 class RobotLoader(Node):
     
     def __init__(self, isaac_world, namespace=""):
@@ -142,93 +143,8 @@ class RobotLoader(Node):
         )
         # Wait a step
         self.isaac_world.wait_step_reload()
-        
-        # Creating a action graph with ROS component nodes
-        # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_ros2_python.html
-        # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_ros2_turtlebot.html#build-the-graph
-        try:
-            (ros_camera_graph, _, _, _) = og.Controller.edit(
-                {
-                    "graph_path": f"/{robot_name}/ActionGraph",
-                    "evaluator_name": "execution",
-                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION
-                },
-                {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("ROS2Context", "omni.isaac.ros2_bridge.ROS2Context"),
-                        ("ROS2SubscribeTwist", "omni.isaac.ros2_bridge.ROS2SubscribeTwist"),
-                        ("scale_to_from_stage_units", "omni.isaac.core_nodes.OgnIsaacScaleToFromStageUnit"),
-                        ("break_3_vector_01", "omni.graph.nodes.BreakVector3"),
-                        ("break_3_vector_02", "omni.graph.nodes.BreakVector3"),
-                        ("DifferentialController", "omni.isaac.wheeled_robots.DifferentialController"),
-                        ("array_index_01", "omni.graph.nodes.ArrayIndex"),
-                        ("array_index_02", "omni.graph.nodes.ArrayIndex"),
-                        ("ConstantToken_01", "omni.graph.nodes.ConstantToken"),
-                        ("ConstantToken_02", "omni.graph.nodes.ConstantToken"),
-                        ("ConstantToken_03", "omni.graph.nodes.ConstantToken"),
-                        ("ConstantToken_04", "omni.graph.nodes.ConstantToken"),
-                        ("MakeArray", "omni.graph.nodes.MakeArray"),
-                        ("MakeArray_02", "omni.graph.nodes.MakeArray"),
-                        ("IsaacArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                    ],
-                    og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "ROS2SubscribeTwist.inputs:execIn"),
-                        ("ROS2Context.outputs:context", "ROS2SubscribeTwist.inputs:context"),
-                        ("ROS2SubscribeTwist.outputs:angularVelocity", "break_3_vector_01.inputs:tuple"),
-                        ("ROS2SubscribeTwist.outputs:linearVelocity", "scale_to_from_stage_units.inputs:value"),
-                        ("scale_to_from_stage_units.outputs:result", "break_3_vector_02.inputs:tuple"),
-                        ("ROS2SubscribeTwist.outputs:execOut", "DifferentialController.inputs:execIn"),
-                        ("break_3_vector_01.outputs:z", "DifferentialController.inputs:angularVelocity"),
-                        ("break_3_vector_02.outputs:x", "DifferentialController.inputs:linearVelocity"),
-                        ("OnPlaybackTick.outputs:tick", "IsaacArticulationController.inputs:execIn"),
-                        ("DifferentialController.outputs:velocityCommand", "array_index_01.inputs:array"),
-                        ("DifferentialController.outputs:velocityCommand", "array_index_02.inputs:array"),
-                        ("array_index_01.outputs:value", "MakeArray_02.inputs:a"),
-                        ("array_index_01.outputs:value", "MakeArray_02.inputs:c"),
-                        ("array_index_02.outputs:value", "MakeArray_02.inputs:b"),
-                        ("array_index_02.outputs:value", "MakeArray_02.inputs:d"),
-                        ("MakeArray_02.outputs:array", "IsaacArticulationController.inputs:velocityCommand"),
-                        # ("DifferentialController.outputs:velocityCommand", "IsaacArticulationController.inputs:velocityCommand"),
-                        ("ConstantToken_01.inputs:value", "MakeArray.inputs:a"),
-                        ("ConstantToken_02.inputs:value", "MakeArray.inputs:b"),
-                        ("ConstantToken_03.inputs:value", "MakeArray.inputs:c"),
-                        ("ConstantToken_04.inputs:value", "MakeArray.inputs:d"),
-                        ("MakeArray.outputs:array", "IsaacArticulationController.inputs:jointNames"),
-                    ],
-                    og.Controller.Keys.SET_VALUES: [
-                        # Assigning a Domain ID of 1 to Context node
-                        ("ROS2Context.inputs:domain_id", 0),
-                        # Assigning topic name to clock publisher
-                        ("ROS2SubscribeTwist.inputs:topicName", "/cmd_vel"),
-                        # Assigning Differential controller configuration
-                        ("DifferentialController.inputs:maxLinearSpeed", 10000.0),
-                        ("DifferentialController.inputs:wheelDistance", 0.512),
-                        ("DifferentialController.inputs:wheelRadius", 0.1651),
-                        # Assign Articulation controller configuration
-                        ("IsaacArticulationController.inputs:usePath", False),
-                        # Set size array
-                        ("array_index_01.inputs:index", 0),
-                        ("array_index_02.inputs:index", 1),
-                        ("MakeArray.inputs:arraySize", 4),
-                        ("MakeArray_02.inputs:arraySize", 4),
-                        # Assigning topic name to clock publisher
-                        ("ConstantToken_01.inputs:value", "rear_left_wheel_joint"),
-                        ("ConstantToken_02.inputs:value", "rear_right_wheel_joint"),
-                        ("ConstantToken_03.inputs:value", "front_left_wheel_joint"),
-                        ("ConstantToken_04.inputs:value", "front_right_wheel_joint"),
-                    ]
-                },
-            )
-        except Exception as e:
-            print(e)
-        
-        HUSKY_STAGE_PATH=f"/{robot_name}/base_link"
-        # Setting the /Franka target prim to Subscribe JointState node
-        set_target_prims(primPath=f"/{robot_name}/ActionGraph/IsaacArticulationController", targetPrimPaths=[HUSKY_STAGE_PATH])
-
-        # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
-        # og.Controller.evaluate_sync(ros_camera_graph)
+        # Build differential controller graph
+        build_differential_controller_graph(robot_name)
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
