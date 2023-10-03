@@ -23,9 +23,33 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import omni
 import omni.graph.core as og
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
+from pxr import Gf, UsdGeom
 
+def build_camera_graph(robot_name):
+    camera_color_stage_path = f"/{robot_name}/camera_color_optical_frame/camera_color"
+    # Creating a Camera prim
+    camera_color_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_color_stage_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_color_prim)
+    xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+    xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    
+    camera_infra1_stage_path = f"/{robot_name}/camera_infra1_optical_frame/camera_infra1"
+    # Creating a Camera prim
+    camera_infra1_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra1_stage_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_infra1_prim)
+    xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+    xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    
+    camera_infra2_stage_path = f"/{robot_name}/camera_infra2_optical_frame/camera_infra2"
+    # Creating a Camera prim
+    camera_infra2_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra2_stage_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_infra2_prim)
+    xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+    xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    
 
 def build_differential_controller_graph(robot_name):   
     # Creating a action graph with ROS component nodes
