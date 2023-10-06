@@ -140,7 +140,28 @@ jetson_l4t_check()
 
 jetson_install()
 {
-    echo "TEST"
+    if [ -z ${SKIP_INSTALL+x} ] ; then
+        local JETSON_L4T=$(jetson_l4t_check)
+        if [[ "$(printf '%s\n' "$JETSON_L4T" "$ISAAC_DEMO_ROS_L4T" | sort -V | head -n1)" != "$JETSON_L4T" ]]; then
+            echo "${bold}${red}You cannot install isaac_demo on this Jetpack with L4T $JETSON_L4T need L4T $ISAAC_DEMO_ROS_L4T${reset}"
+            exit 1
+        fi
+
+        echo "${green}${bold}Install on NVIDIA Jetson L4T $JETSON_L4T${reset}"
+
+        pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_robot.rosinstall
+    fi
+
+    if [ ! -f $ISAAC_ROS_SRC_PATH/isaac_ros_common/scripts/.isaac_ros_common-config  ] ; then
+        echo " - ${green}Setup Isaac ROS docker image${reset}"
+        cd $ISAAC_ROS_SRC_PATH/isaac_ros_common/scripts
+        touch .isaac_ros_common-config 
+        echo CONFIG_IMAGE_KEY=ros2_humble.realsense > .isaac_ros_common-config
+    fi
+
+    echo " - ${green}Move to Isaac ROS common and run image${reset}"
+    cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
+    bash scripts/run_dev.sh $ISAAC_ROS_PATH
 }
 
 main()
