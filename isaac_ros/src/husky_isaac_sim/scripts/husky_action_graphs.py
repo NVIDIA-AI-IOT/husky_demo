@@ -30,7 +30,7 @@ from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf, UsdGeom
 from omni.isaac.core.utils.prims import set_targets
 
-def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, camera_name):
+def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
     
     ros_camera_graph_path = f"/{robot_name}/ROS_CameraGraph_{camera_name}"
     viewport_name = f"Viewport{number_camera}"
@@ -76,11 +76,12 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
                 ("setViewportResolution.inputs:width", 640),
                 ("setViewportResolution.inputs:height", 480),
                 ("cameraHelper.inputs:frameId", f"{camera_frame}"),
-                ("cameraHelper.inputs:topicName", f"/{robot_name}/d435/{camera_name}/image_raw"),
+                ("cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/{type_camera}"),
                 ("cameraHelper.inputs:type", f"{type_camera}"),
                 ("cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
-                ("cameraHelperInfo.inputs:topicName", f"/{robot_name}/d435/{camera_name}/camera_info"),
+                ("cameraHelperInfo.inputs:topicName", f"/front/stereo_camera/{camera_name}/camera_info"),
                 ("cameraHelperInfo.inputs:type", "camera_info"),
+                ("cameraHelperInfo.inputs:stereoOffset", stereo_offset),
             ],
         },
     )
@@ -98,30 +99,49 @@ def build_camera_graph(robot_name,type_output):
     # Creating a Camera prim
     camera_color_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_color_stage_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_color_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+    #xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
     xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    
+    #camera_color_prim.GetHorizontalApertureAttr().Set(21)
+    #camera_color_prim.GetVerticalApertureAttr().Set(16)
+    #camera_color_prim.GetProjectionAttr().Set("perspective")
+    #camera_color_prim.GetFocalLengthAttr().Set(24)
+    #camera_color_prim.GetFocusDistanceAttr().Set(400)
+
     camera_infra1_stage_path = f"/{robot_name}/camera_infra1_optical_frame/camera_infra1"
     # Creating a Camera prim
     camera_infra1_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra1_stage_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_infra1_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+    #xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
     xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    #camera_infra1_prim.GetHorizontalApertureAttr().Set(21)
+    #camera_infra1_prim.GetVerticalApertureAttr().Set(16)
+    #camera_infra1_prim.GetProjectionAttr().Set("perspective")
+    #camera_infra1_prim.GetFocalLengthAttr().Set(24)
+    #camera_infra1_prim.GetFocusDistanceAttr().Set(400)
     
     camera_infra2_stage_path = f"/{robot_name}/camera_infra2_optical_frame/camera_infra2"
     # Creating a Camera prim
     camera_infra2_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra2_stage_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_infra2_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+    #xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
     xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    #camera_infra2_prim.GetHorizontalApertureAttr().Set(21)
+    #camera_infra2_prim.GetVerticalApertureAttr().Set(16)
+    #camera_infra2_prim.GetProjectionAttr().Set("perspective")
+    #camera_infra2_prim.GetFocalLengthAttr().Set(24)
+    #camera_infra2_prim.GetFocusDistanceAttr().Set(400)
     # Create rgb camera
     create_camera(robot_name, 1, "camera_color_optical_frame", camera_color_stage_path, "rgb")
+    create_camera(robot_name, 2, "camera_color_optical_frame", camera_color_stage_path, "depth")
+    create_camera(robot_name, 3, "camera_infra1_optical_frame", camera_infra1_stage_path, "left")
+    create_camera(robot_name, 4, "camera_infra2_optical_frame", camera_infra2_stage_path, "right", stereo_offset=[-50.0, 0.0])
     # Load other cameras
-    if type_output == "depth":
-        create_camera(robot_name, 2, "camera_infra1_optical_frame", camera_infra1_stage_path, "depth")
-    elif type_output == "raw":
-        create_camera(robot_name, 2, "camera_infra1_optical_frame", camera_infra1_stage_path, "infra1")
-        create_camera(robot_name, 3, "camera_infra2_optical_frame", camera_infra1_stage_path, "infra2")
+    #if type_output == "depth":
+    #    create_camera(robot_name, 1, "camera_color_optical_frame", camera_color_stage_path, "rgb")
+    #    create_camera(robot_name, 2, "camera_infra1_optical_frame", camera_infra1_stage_path, "depth")
+    #elif type_output == "raw":
+    #    create_camera(robot_name, 1, "camera_infra1_optical_frame", camera_infra1_stage_path, "infra1")
+    #    create_camera(robot_name, 2, "camera_infra2_optical_frame", camera_infra2_stage_path, "infra2", stereo_offset=[-50.0, 0.0])
 
 
 def build_differential_controller_graph(robot_name):   
@@ -184,7 +204,7 @@ def build_differential_controller_graph(robot_name):
                     # Assigning topic name to clock publisher
                     ("ROS2SubscribeTwist.inputs:topicName", "/cmd_vel"),
                     # Assigning Differential controller configuration
-                    ("DifferentialController.inputs:maxLinearSpeed", 10000.0),
+                    #("DifferentialController.inputs:maxLinearSpeed", 10000.0),
                     ("DifferentialController.inputs:wheelDistance", 0.512),
                     ("DifferentialController.inputs:wheelRadius", 0.1651),
                     # Assign Articulation controller configuration
@@ -208,3 +228,4 @@ def build_differential_controller_graph(robot_name):
     HUSKY_STAGE_PATH=f"/{robot_name}/base_link"
     # Setting the /Franka target prim to Subscribe JointState node
     set_target_prims(primPath=f"/{robot_name}/ActionGraph/IsaacArticulationController", targetPrimPaths=[HUSKY_STAGE_PATH])
+# EOF

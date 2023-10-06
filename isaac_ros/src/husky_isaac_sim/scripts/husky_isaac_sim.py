@@ -114,10 +114,10 @@ class RobotLoader(Node):
         self.namespace = namespace
         self.isaac_world = isaac_world
         # setup the ROS2 subscriber here
-        self.ros_sub = self.create_subscription(String, "robot_description", self.callback_description, 1)
+        self.ros_sub = self.create_subscription(String, "isaac_description", self.callback_description, 1)
         self.ros_sub  # prevent unused variable warning
-        #self.ros_sub_vel = self.create_subscription(Twist, "cmd_vel", self.callback_test, 1)
-        #self.ros_sub_vel  # prevent unused variable warning
+        # self.ros_sub_vel = self.create_subscription(Twist, "cmd_vel", self.callback_test, 1)
+        # self.ros_sub_vel  # prevent unused variable warning
         # Node started
         self.get_logger().info("Robot loader start")
 

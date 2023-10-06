@@ -49,7 +49,7 @@ def generate_launch_description():
     path_mesh_realsense = f"{host_path}/isaac_ros/src/husky_isaac_sim/meshes"
 
     # Launch Robot State Publisher
-    robot_state_publisher_node = Node(
+    isaac_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
@@ -60,11 +60,25 @@ def generate_launch_description():
                              'path_meshes:=', path_meshes, ' ',
                              'path_mesh_realsense:=', path_mesh_realsense, ' ',
                          ])
-                     }]
+                     }],
+        remappings=[('robot_description', 'isaac_description')]
+    )
+
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time,
+                     'robot_description': Command(
+                         [
+                             'xacro ', xacro_path, ' ',
+                         ])
+                     }],
     )
 
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
+    ld.add_action(isaac_state_publisher_node)
     ld.add_action(robot_state_publisher_node)
 
     return ld

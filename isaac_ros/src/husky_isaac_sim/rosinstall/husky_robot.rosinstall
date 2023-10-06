@@ -1,0 +1,43 @@
+- git:
+    local-name: isaac_ros_common
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common.git
+- git:
+    local-name: isaac_ros_nitros
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nitros.git
+- git:
+    local-name: isaac_ros_nvblox
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox.git
+- git:
+    local-name: isaac_ros_image_pipeline
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_image_pipeline.git
+- git:
+    local-name: isaac_ros_visual_slam
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_visual_slam.git
+- git:
+    local-name: isaac_ros_apriltag
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag.git
+- git:
+    local-name: isaac_ros_dnn_inference
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_dnn_inference.git
+- git:
+    local-name: isaac_ros_object_detection
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_object_detection.git
+- git:
+    local-name: isaac_ros_proximity_segmentation
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_proximity_segmentation.git
+- git:
+    local-name: isaac_ros_freespace_segmentation
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_freespace_segmentation.git
+# Foxglove
+- git:
+    local-name: ros-foxglove-bridge
+    uri: https://github.com/foxglove/ros-foxglove-bridge.git
+# Dependency issue from Isaac ROS NVblox
+- git:
+    local-name: realsense-ros
+    version: ros2-development
+    uri: https://github.com/IntelRealSense/realsense-ros.git
+- git:
+    local-name: xacro
+    version: ros2
+    uri: https://github.com/ros/xacro.git
