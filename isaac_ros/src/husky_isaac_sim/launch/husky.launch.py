@@ -232,7 +232,7 @@ def generate_launch_description():
     # Isaac ROS container
     ld.add_action(isaac_ros_launch_container)
     # vSLAM and NVBLOX
-    #ld.add_action(nvblox_launch)
+    ld.add_action(nvblox_launch)
     # Navigation tool
     #ld.add_action(nav2_launch)
 
