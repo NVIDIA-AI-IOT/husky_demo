@@ -53,7 +53,7 @@ run_desktop()
     # rviz2 -d $ISAAC_DEMO_PKG_PATH/rviz/carter.rviz
 }
 
-run_jetson
+run_jetson()
 {
     local LIBWEBSOCKETPP_PKG=$(dpkg -l 2>/dev/null | grep -m1 "libwebsocketpp")
     if [ -z "$LIBWEBSOCKETPP_PKG" ] ; then
@@ -68,6 +68,11 @@ run_jetson
         echo " - ${green}Build Isaac ROS${reset}"
         colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot
     fi
+
+    # source workspace
+    source install/setup.bash
+    # Run demo
+    ros2 launch husky_isaac_sim husky.launch.py
 }
 
 main()
