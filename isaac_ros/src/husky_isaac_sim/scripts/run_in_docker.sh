@@ -49,7 +49,7 @@ run_desktop()
     source install/setup.bash
     # Run demo
     # ros2 launch husky_isaac_sim husky_isaac_sim.launch.py
-    ros2 launch husky_isaac_sim robot_state_publisher.launch.py
+    ros2 launch husky_isaac_sim description.launch.py
     # rviz2 -d $ISAAC_DEMO_PKG_PATH/rviz/carter.rviz
 }
 

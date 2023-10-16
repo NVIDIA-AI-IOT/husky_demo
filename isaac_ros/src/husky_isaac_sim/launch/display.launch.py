@@ -39,8 +39,6 @@ def generate_launch_description():
     husky_isaac_sim_path = get_package_share_directory('husky_isaac_sim')
     
     gui = LaunchConfiguration('gui')
-    cover_type = LaunchConfiguration('cover_type')
-    diff_drive_emulation = LaunchConfiguration('diff_drive_emulation')
     rvizconfig = LaunchConfiguration('rvizconfig')
     
     default_rviz_config_path = os.path.join(husky_isaac_sim_path, 'rviz', 'urdf.rviz')
@@ -73,15 +71,14 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         output='screen',
-        #arguments=['-d', rvizconfig],
+        arguments=['-d', rvizconfig],
         on_exit=Shutdown()
     )
 
-    # Nanosaur description launch
+    # Husky description launch
     # https://answers.ros.org/question/306935/ros2-include-a-launch-file-from-a-launch-file/
     description_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([husky_isaac_sim_path, '/launch/description.launch.py']),
-        #launch_arguments={'cover_type': cover_type, 'diff_drive_emulation': diff_drive_emulation}.items()
         )
 
     # Define LaunchDescription variable and return it

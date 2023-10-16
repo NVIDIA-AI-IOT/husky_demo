@@ -10,5 +10,6 @@ src/husky
 src/navigation
 src/xacro
 src/teleop_twist_keyboard
+src/joint_state_publisher
 # internal data
 host_path
