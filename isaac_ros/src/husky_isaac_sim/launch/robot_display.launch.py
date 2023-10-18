@@ -38,37 +38,16 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     
     husky_isaac_sim_path = get_package_share_directory('husky_isaac_sim')
-    
-    gui = LaunchConfiguration('gui')
+
     rvizconfig = LaunchConfiguration('rvizconfig')
     
-    default_rviz_config_path = os.path.join(husky_isaac_sim_path, 'rviz', 'urdf.rviz')
-
-    #default_rviz_config_path = PathJoinSubstitution([FindPackageShare("husky_viz"), "rviz", "test.rviz"])
-
-    declare_gui_cmd = DeclareLaunchArgument(
-        name='gui',
-        default_value='True',
-        description='Flag to enable joint_state_publisher_gui')
+    default_rviz_config_path = os.path.join(husky_isaac_sim_path, 'rviz', 'navigation.rviz')
 
     declare_rvizconfig_cmd = DeclareLaunchArgument(
         name='rvizconfig',
         default_value=default_rviz_config_path,
         description='Absolute path to rviz config file')
 
-    joint_state_publisher_gui_node = Node(
-        package='joint_state_publisher_gui',
-        executable='joint_state_publisher_gui',
-        name='joint_state_publisher_gui',
-        condition=IfCondition(gui),
-        on_exit=Shutdown()
-    )
-    joint_state_publisher_node = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        condition=UnlessCondition(gui)
-    )
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -87,11 +66,8 @@ def generate_launch_description():
     # Define LaunchDescription variable and return it
     ld = LaunchDescription()
     
-    ld.add_action(declare_gui_cmd)
     ld.add_action(declare_rvizconfig_cmd)
     ld.add_action(description_launch)
-    ld.add_action(joint_state_publisher_node)
-    ld.add_action(joint_state_publisher_gui_node)
     ld.add_action(rviz_node)
 
     return ld

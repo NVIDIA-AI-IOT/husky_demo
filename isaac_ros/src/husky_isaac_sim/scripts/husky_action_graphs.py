@@ -107,42 +107,57 @@ def build_camera_graph(robot_name,type_output):
     #camera_color_prim.GetFocalLengthAttr().Set(24)
     #camera_color_prim.GetFocusDistanceAttr().Set(400)
 
+    camera_depth_stage_path = f"/{robot_name}/camera_depth_optical_frame/camera_depth"
+    # Creating a Camera prim
+    camera_depth_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_depth_stage_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_depth_prim)
+    xform_api.SetTranslate(Gf.Vec3d(0.1, 0, 0))
+    #xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    xform_api.SetRotate((0, 0, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    #xform_api.SetRotate((90, -90, 0), UsdGeom.XformCommonAPI.RotationOrderZYX)
+    camera_depth_prim.GetHorizontalApertureAttr().Set(2.0955)
+    camera_depth_prim.GetVerticalApertureAttr().Set(1.1769)
+    camera_depth_prim.GetClippingRangeAttr().Set((0.01, 10000))
+    camera_depth_prim.GetProjectionAttr().Set("perspective")
+    camera_depth_prim.GetVisibilityAttr().Set("invisible")
+    camera_depth_prim.GetFocalLengthAttr().Set(2.4)
+    camera_depth_prim.GetFocusDistanceAttr().Set(4)
+
     camera_infra1_stage_path = f"/{robot_name}/camera_infra1_optical_frame/camera_infra1"
     # Creating a Camera prim
     camera_infra1_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra1_stage_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_infra1_prim)
-    #xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
-    xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    #camera_infra1_prim.GetHorizontalApertureAttr().Set(21)
-    #camera_infra1_prim.GetVerticalApertureAttr().Set(16)
-    #camera_infra1_prim.GetProjectionAttr().Set("perspective")
-    #camera_infra1_prim.GetFocalLengthAttr().Set(24)
-    #camera_infra1_prim.GetFocusDistanceAttr().Set(400)
+    xform_api.SetTranslate(Gf.Vec3d(0.1, 0, 0))
+    #xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    xform_api.SetRotate((0, 0, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    #xform_api.SetRotate((90, -90, 0), UsdGeom.XformCommonAPI.RotationOrderZYX)
+    camera_infra1_prim.GetHorizontalApertureAttr().Set(2.0955)
+    camera_infra1_prim.GetVerticalApertureAttr().Set(1.1769)
+    camera_infra1_prim.GetClippingRangeAttr().Set((0.01, 10000))
+    camera_infra1_prim.GetProjectionAttr().Set("perspective")
+    camera_infra1_prim.GetVisibilityAttr().Set("invisible")
+    camera_infra1_prim.GetFocalLengthAttr().Set(2.4)
+    camera_infra1_prim.GetFocusDistanceAttr().Set(4)
     
     camera_infra2_stage_path = f"/{robot_name}/camera_infra2_optical_frame/camera_infra2"
     # Creating a Camera prim
     camera_infra2_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra2_stage_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_infra2_prim)
-    #xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
-    xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    #camera_infra2_prim.GetHorizontalApertureAttr().Set(21)
-    #camera_infra2_prim.GetVerticalApertureAttr().Set(16)
-    #camera_infra2_prim.GetProjectionAttr().Set("perspective")
-    #camera_infra2_prim.GetFocalLengthAttr().Set(24)
-    #camera_infra2_prim.GetFocusDistanceAttr().Set(400)
+    xform_api.SetTranslate(Gf.Vec3d(0.1, 0, 0))
+    #xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    xform_api.SetRotate((0, 0, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    #xform_api.SetRotate((90, -90, 0), UsdGeom.XformCommonAPI.RotationOrderZYX)
+    camera_infra2_prim.GetHorizontalApertureAttr().Set(2.0955)
+    camera_infra2_prim.GetVerticalApertureAttr().Set(1.1769)
+    camera_infra2_prim.GetClippingRangeAttr().Set((0.01, 10000))
+    camera_infra2_prim.GetProjectionAttr().Set("perspective")
+    camera_infra2_prim.GetVisibilityAttr().Set("invisible")
+    camera_infra2_prim.GetFocalLengthAttr().Set(2.4)
+    camera_infra2_prim.GetFocusDistanceAttr().Set(4)
     # Create rgb camera
-    create_camera(robot_name, 1, "camera_color_optical_frame", camera_color_stage_path, "rgb")
-    create_camera(robot_name, 2, "camera_color_optical_frame", camera_color_stage_path, "depth")
-    create_camera(robot_name, 3, "camera_infra1_optical_frame", camera_infra1_stage_path, "left")
-    create_camera(robot_name, 4, "camera_infra2_optical_frame", camera_infra2_stage_path, "right", stereo_offset=[-50.0, 0.0])
-    # Load other cameras
-    #if type_output == "depth":
-    #    create_camera(robot_name, 1, "camera_color_optical_frame", camera_color_stage_path, "rgb")
-    #    create_camera(robot_name, 2, "camera_infra1_optical_frame", camera_infra1_stage_path, "depth")
-    #elif type_output == "raw":
-    #    create_camera(robot_name, 1, "camera_infra1_optical_frame", camera_infra1_stage_path, "infra1")
-    #    create_camera(robot_name, 2, "camera_infra2_optical_frame", camera_infra2_stage_path, "infra2", stereo_offset=[-50.0, 0.0])
-
+    create_camera(robot_name, 1, "camera_infra1_optical_frame", camera_infra1_stage_path, "left")
+    create_camera(robot_name, 2, "camera_infra2_optical_frame", camera_infra2_stage_path, "right", stereo_offset=[-50.0, 0])
+    create_camera(robot_name, 3, "camera_depth_optical_frame", camera_depth_stage_path, "depth")
 
 def build_differential_controller_graph(robot_name):   
     # Creating a action graph with ROS component nodes
