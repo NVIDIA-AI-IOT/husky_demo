@@ -42,7 +42,7 @@ from omni.kit import commands
 from husky_action_graphs import build_differential_controller_graph, build_camera_graph
 
 # enable ROS bridge extension
-enable_extension("omni.isaac.ros2_bridge-humble")
+enable_extension("omni.isaac.ros2_bridge")
 
 simulation_app.update()
 

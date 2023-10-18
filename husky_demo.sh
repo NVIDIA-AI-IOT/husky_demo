@@ -29,7 +29,8 @@ RVIZ_RUN=false
 FOXGLOVE_RUN=false
 # Requested version to install this set of demo on Jetson
 ISAAC_DEMO_ROS_L4T="35.3" # 35.1 = Jetpack 5.0.2
-ISAAC_SIM_VERSION="prod-isaac_sim-2022.2.1"  # Isaac SIM version
+# ISAAC_SIM_VERSION="prod-isaac_sim-2022.2.1"  # Isaac SIM version
+ISAAC_SIM_VERSION="prod-isaac_sim-2023.1.0"  # Isaac SIM version
 
 # DO NOT EDIT
 
@@ -106,6 +107,7 @@ workstation_install()
 
     unset LD_LIBRARY_PATH
 
+    source /opt/ros/humble/setup.bash
     # Load host path, this is used to share the same path between host and container for Isaac SIM
     # this is required to load the same urdf meshes
     echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
