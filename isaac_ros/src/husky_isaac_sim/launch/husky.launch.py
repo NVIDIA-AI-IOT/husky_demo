@@ -227,14 +227,12 @@ def generate_launch_description():
     ld.add_action(grid_height_arg)
     ld.add_action(grid_width_arg)
     ld.add_action(grid_resolution_arg)
-    # carter description launch
-    #ld.add_action(description_launch)
     # Isaac ROS container
     ld.add_action(isaac_ros_launch_container)
     # vSLAM and NVBLOX
-    #ld.add_action(nvblox_launch)
+    ld.add_action(nvblox_launch)
     # Navigation tool
-    #ld.add_action(nav2_launch)
+    ld.add_action(nav2_launch)
 
     return ld
 # EOF
