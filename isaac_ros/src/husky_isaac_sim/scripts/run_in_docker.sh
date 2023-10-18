@@ -44,7 +44,7 @@ run_desktop()
         colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot
     fi
     
-    echo " - ${green}Run rviz2${reset}"
+    echo " - ${green}Run rviz2 and husky push on Isaac SIM${reset}"
     # source workspace
     source install/setup.bash
     # Run demo
