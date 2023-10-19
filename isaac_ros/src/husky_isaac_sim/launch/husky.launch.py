@@ -176,12 +176,6 @@ def generate_launch_description():
             os.path.join(bringup_dir, 'launch', 'nvblox', 'nvblox.launch.py')]),
         launch_arguments={'setup_for_isaac_sim': 'True'}.items())
 
-    # include another launch file in nanosaur namespace
-    # https://docs.ros.org/en/foxy/How-To-Guides/Launch-file-different-formats.html
-    #description_launch = IncludeLaunchDescription(
-    #            PythonLaunchDescriptionSource([pkg_description, '/launch/description.launch.py']),
-    #        )
-
     ############################
 
     # Launch ROS2 packages
@@ -199,9 +193,9 @@ def generate_launch_description():
     # Isaac ROS container
     ld.add_action(isaac_ros_launch_container)
     # vSLAM and NVBLOX
-    #ld.add_action(nvblox_launch)
+    ld.add_action(nvblox_launch)
     # Navigation tool
-    #ld.add_action(nav2_launch)
+    ld.add_action(nav2_launch)
 
     return ld
 # EOF
