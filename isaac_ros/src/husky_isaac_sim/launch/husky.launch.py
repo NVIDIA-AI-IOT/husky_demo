@@ -118,7 +118,7 @@ def generate_launch_description():
     visual_slam_node = ComposableNode(
         name='visual_slam_node',
         package='isaac_ros_visual_slam',
-        plugin='isaac_ros::visual_slam::VisualSlamNode',
+        plugin='nvidia::isaac_ros::visual_slam::VisualSlamNode',
         remappings=[('stereo_camera/left/camera_info', '/front/stereo_camera/left/camera_info'),
                     ('stereo_camera/right/camera_info', '/front/stereo_camera/right/camera_info'),
                     ('stereo_camera/left/image', '/front/stereo_camera/left/rgb'),
@@ -131,13 +131,14 @@ def generate_launch_description():
             'rectified_images': True,
             'enable_debug_mode': False,
             'enable_imu': False,
-            'debug_dump_path': '/tmp/elbrus',
+            'debug_dump_path': '/tmp/cuvslam',
             'left_camera_frame': 'camera_infra1_optical_frame',
             'right_camera_frame': 'camera_infra2_optical_frame',
             'map_frame': 'map',
             'fixed_frame': 'odom',
             'odom_frame': 'odom',
             'base_frame': 'base_link',
+            'input_base_frame': 'base_link',
             'current_smooth_frame': 'base_link_smooth',
             'current_rectified_frame': 'base_link_rectified',
             'enable_observations_view': True,
@@ -151,36 +152,6 @@ def generate_launch_description():
         }]
     )
 
-    bi3d_node = ComposableNode(
-        name='bi3d_node',
-        package='isaac_ros_bi3d',
-        plugin='nvidia::isaac_ros::bi3d::Bi3DNode',
-        parameters=[{
-                'featnet_engine_file_path': featnet_engine_file_path,
-                'segnet_engine_file_path': segnet_engine_file_path,
-                'max_disparity_values': max_disparity_values,
-                'disparity_values': [3, 6, 9, 12, 15, 18, 21, 24, 27, 30],
-                'use_sim_time': use_sim_time}],
-        remappings=[('bi3d_node/bi3d_output', 'bi3d_mask'),
-                    ('left_image_bi3d', '/front/stereo_camera/left/rgb'),
-                    ('right_image_bi3d', '/front/stereo_camera/right/rgb')]
-    )
-
-    freespace_segmentation_node = ComposableNode(
-        name='freespace_segmentation_node',
-        package='isaac_ros_bi3d_freespace',
-        plugin='nvidia::isaac_ros::bi3d_freespace::FreespaceSegmentationNode',
-        parameters=[{
-            'base_link_frame': 'base_link',
-            'camera_frame': 'carter_camera_stereo_left',
-            'f_x': f_x_,
-            'f_y': f_y_,
-            'grid_height': grid_height,
-            'grid_width': grid_width,
-            'grid_resolution': grid_resolution,
-            'use_sim_time': use_sim_time
-        }])
-
     isaac_ros_launch_container = ComposableNodeContainer(
         name='isaac_ros_launch_container',
         namespace='',
@@ -189,8 +160,6 @@ def generate_launch_description():
         composable_node_descriptions=[
             visual_slam_node,
             #apriltag_node,
-            #bi3d_node,
-            #freespace_segmentation_node,
         ],
         output='screen'
     )
@@ -230,9 +199,9 @@ def generate_launch_description():
     # Isaac ROS container
     ld.add_action(isaac_ros_launch_container)
     # vSLAM and NVBLOX
-    ld.add_action(nvblox_launch)
+    #ld.add_action(nvblox_launch)
     # Navigation tool
-    ld.add_action(nav2_launch)
+    #ld.add_action(nav2_launch)
 
     return ld
 # EOF
