@@ -64,7 +64,7 @@ run_jetson()
 
     if [ ! -d $LOCAL_PATH/install ] ; then
         echo " - ${green}Build Isaac ROS${reset}"
-        colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot
+        colcon build --symlink-install --merge-install
     fi
 
     # source workspace

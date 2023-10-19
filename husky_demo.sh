@@ -102,7 +102,6 @@ workstation_install()
         fi
 
         pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_workstation.rosinstall
-        pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_robot.rosinstall
     fi
 
     unset LD_LIBRARY_PATH
