@@ -34,10 +34,6 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
     
     ros_camera_graph_path = f"/{robot_name}/ROS_CameraGraph_{camera_name}"
     viewport_name = f"Viewport{number_camera}"
-    if camera_name == "depth":
-        type_camera = "depth"
-    else:
-        type_camera = "rgb"
     
     # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
     keys = og.Controller.Keys
@@ -76,8 +72,73 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
                 ("setViewportResolution.inputs:width", 640),
                 ("setViewportResolution.inputs:height", 480),
                 ("cameraHelper.inputs:frameId", f"{camera_frame}"),
-                ("cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/{type_camera}"),
-                ("cameraHelper.inputs:type", f"{type_camera}"),
+                ("cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/rgb"),
+                ("cameraHelper.inputs:type", f"rgb"),
+                ("cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
+                ("cameraHelperInfo.inputs:topicName", f"/front/stereo_camera/{camera_name}/camera_info"),
+                ("cameraHelperInfo.inputs:type", "camera_info"),
+                ("cameraHelperInfo.inputs:stereoOffset", stereo_offset),
+            ],
+        },
+    )
+
+    set_targets(
+        prim=stage.get_current_stage().GetPrimAtPath(ros_camera_graph_path + "/setCamera"),
+        attribute="inputs:cameraPrim",
+        target_prim_paths=[camera_stage_path],
+    )
+
+
+def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
+    
+    ros_camera_graph_path = f"/{robot_name}/ROS_CameraGraph_{camera_name}"
+    viewport_name = f"Viewport{number_camera}"
+    
+    # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
+    keys = og.Controller.Keys
+    (ros_camera_graph, _, _, _) = og.Controller.edit(
+        {
+            "graph_path": ros_camera_graph_path,
+            "evaluator_name": "push",
+            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+        },
+        {
+            keys.CREATE_NODES: [
+                ("OnTick", "omni.graph.action.OnTick"),
+                ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
+                ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                ("cameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ("cameraDepth", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+            ],
+            keys.CONNECT: [
+                ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                ("createViewport.outputs:execOut", "setViewportResolution.inputs:execIn"),
+                ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                ("createViewport.outputs:viewport", "setViewportResolution.inputs:viewport"),
+                ("setViewportResolution.outputs:execOut", "setCamera.inputs:execIn"),
+                ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+                ("setCamera.outputs:execOut", "cameraHelper.inputs:execIn"),
+                ("setCamera.outputs:execOut", "cameraDepth.inputs:execIn"),
+                ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+                ("getRenderProduct.outputs:renderProductPath", "cameraHelper.inputs:renderProductPath"),
+                ("getRenderProduct.outputs:renderProductPath", "cameraDepth.inputs:renderProductPath"),
+                ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+            ],
+            keys.SET_VALUES: [
+                ("createViewport.inputs:name", viewport_name),
+                ("createViewport.inputs:viewportId", number_camera),
+                ("setViewportResolution.inputs:width", 640),
+                ("setViewportResolution.inputs:height", 480),
+                ("cameraHelper.inputs:frameId", f"{camera_frame}"),
+                ("cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/rgb"),
+                ("cameraHelper.inputs:type", f"rgb"),
+                ("cameraDepth.inputs:frameId", f"{camera_frame}"),
+                ("cameraDepth.inputs:topicName", f"/front/stereo_camera/{camera_name}/depth"),
+                ("cameraDepth.inputs:type", f"depth"),
                 ("cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
                 ("cameraHelperInfo.inputs:topicName", f"/front/stereo_camera/{camera_name}/camera_info"),
                 ("cameraHelperInfo.inputs:type", "camera_info"),
@@ -155,9 +216,8 @@ def build_camera_graph(robot_name,type_output):
     camera_infra2_prim.GetFocalLengthAttr().Set(2.4)
     camera_infra2_prim.GetFocusDistanceAttr().Set(4)
     # Create rgb camera
-    create_camera(robot_name, 1, "camera_infra1_optical_frame", camera_infra1_stage_path, "left")
+    create_camera_rgb_depth(robot_name, 1, "camera_infra1_optical_frame", camera_infra1_stage_path, "left")
     create_camera(robot_name, 2, "camera_infra2_optical_frame", camera_infra2_stage_path, "right", stereo_offset=[-50.0, 0])
-    create_camera(robot_name, 3, "camera_depth_optical_frame", camera_depth_stage_path, "depth")
 
 def build_differential_controller_graph(robot_name):   
     # Creating a action graph with ROS component nodes
@@ -188,6 +248,8 @@ def build_differential_controller_graph(robot_name):
                     ("MakeArray", "omni.graph.nodes.MakeArray"),
                     ("MakeArray_02", "omni.graph.nodes.MakeArray"),
                     ("IsaacArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                    ("IsaacReadSimulationTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("ROS2PublishTransformTree", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ROS2SubscribeTwist.inputs:execIn"),
@@ -212,6 +274,9 @@ def build_differential_controller_graph(robot_name):
                     ("ConstantToken_03.inputs:value", "MakeArray.inputs:c"),
                     ("ConstantToken_04.inputs:value", "MakeArray.inputs:d"),
                     ("MakeArray.outputs:array", "IsaacArticulationController.inputs:jointNames"),
+                    ("OnPlaybackTick.outputs:tick", "ROS2PublishTransformTree.inputs:execIn"),
+                    ("ROS2Context.outputs:context", "ROS2PublishTransformTree.inputs:context"),
+                    ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishTransformTree.inputs:timeStamp"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     # Assigning a Domain ID of 1 to Context node
@@ -243,4 +308,16 @@ def build_differential_controller_graph(robot_name):
     HUSKY_STAGE_PATH=f"/{robot_name}/base_link"
     # Setting the /Franka target prim to Subscribe JointState node
     set_target_prims(primPath=f"/{robot_name}/ActionGraph/IsaacArticulationController", targetPrimPaths=[HUSKY_STAGE_PATH])
+    # Set targets for Husky
+    HUSKY_STAGE_WHEELS_PATH=[f"/{robot_name}/front_left_wheel", f"/{robot_name}/front_right_wheel", f"/{robot_name}/rear_left_wheel", f"/{robot_name}/rear_right_wheel"]
+    set_target_prims(
+        primPath=f"/{robot_name}/ActionGraph/ROS2PublishTransformTree",
+        inputName="inputs:targetPrims",
+        targetPrimPaths=HUSKY_STAGE_WHEELS_PATH,
+    )
+    set_target_prims(
+        primPath=f"/{robot_name}/ActionGraph/ROS2PublishTransformTree",
+        inputName="inputs:parentPrim",
+        targetPrimPaths=[HUSKY_STAGE_PATH],
+    )
 # EOF
