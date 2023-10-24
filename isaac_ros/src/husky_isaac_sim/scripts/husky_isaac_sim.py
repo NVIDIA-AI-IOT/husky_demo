@@ -30,6 +30,7 @@ import sys
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 BACKGROUND_STAGE_PATH = "/background"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
+# BACKGROUND_USD_PATH = ""
 
 simulation_app = SimulationApp(CONFIG)
 
@@ -38,8 +39,9 @@ from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.kit import commands
+from omni.usd import get_stage_next_free_path
 
-from husky_action_graphs import build_differential_controller_graph, build_camera_graph
+from husky_action_graphs import build_differential_controller_graph, build_camera_graph, build_clock_graph
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros2_bridge")
@@ -54,6 +56,7 @@ from rclpy.node import Node
 
 
 PATH_LOCAL_URDF_FOLDER="/tmp/robot.urdf"
+simulation_context = None
 
 class IsaacWorld():
     
@@ -75,6 +78,11 @@ class IsaacWorld():
             self.simulation_context.scene.add_default_ground_plane()
             # need to initialize physics getting any articulation..etc
             self.simulation_context.initialize_physics()
+        # Build clock graph
+        build_clock_graph()
+        # TEMP share simulation context
+        global simulation_context
+        simulation_context = self.simulation_context
         # Wait two frames so that stage starts loading
         simulation_app.update()
         simulation_app.update()
@@ -133,19 +141,29 @@ class RobotLoader(Node):
 
         # Import URDF, stage_path contains the path to the usd prim in the stage.
         # extension_path = get_extension_path_from_name("omni.isaac.urdf")
+        dest_path = "/tmp/husky.usd"
+        
         status, stage_path = commands.execute(
             "URDFParseAndImportFile",
             urdf_path=PATH_LOCAL_URDF_FOLDER,
             import_config=import_config,
+            #dest_path=dest_path
         )
+        # TODO change start position        
+        #stage_path = get_stage_next_free_path(
+        #    simulation_context.scene.stage,
+        #    "/World" + stage_path,
+        #    False
+        #)
+        #robot_prim = simulation_context.scene.stage.OverridePrim(stage_path)
+        #robot_prim.GetReferences().AddReference(dest_path)
+        
         # Wait a step
         self.isaac_world.wait_step_reload()
         # Build differential controller graph
         build_differential_controller_graph(robot_name)
         # Build camera graph
-        # Options: raw, depth
-        type_output = "raw"
-        build_camera_graph(robot_name, type_output)
+        build_camera_graph(robot_name)
         simulation_app.update()
 
     def callback_description(self, msg):

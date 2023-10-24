@@ -46,7 +46,7 @@ def generate_launch_description():
     # Load host path
     host_path = open("/workspaces/isaac_ros-dev/src/host_path", 'r').readline().rstrip('\n')
     path_meshes = f"{host_path}/isaac_ros/src/husky/husky_description/meshes"
-    path_mesh_realsense = f"{host_path}/isaac_ros/src/husky_isaac_sim/meshes"
+    path_mesh_accessories = f"{host_path}/isaac_ros/src/husky_isaac_sim/meshes"
 
     # Launch Robot State Publisher
     isaac_state_publisher_node = Node(
@@ -58,7 +58,7 @@ def generate_launch_description():
                          [
                              'xacro ', xacro_path, ' ',
                              'path_meshes:=', path_meshes, ' ',
-                             'path_mesh_realsense:=', path_mesh_realsense, ' ',
+                             'path_mesh_accessories:=', path_mesh_accessories, ' ',
                          ])
                      }],
         remappings=[('robot_description', 'isaac_description')]

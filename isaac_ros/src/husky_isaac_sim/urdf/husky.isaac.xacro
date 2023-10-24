@@ -6,12 +6,12 @@
 
   <xacro:arg name="prefix" default="" />
   <xacro:arg name="path_meshes" default="package://husky_description/meshes" />
-  <xacro:arg name="path_mesh_realsense" default="package://husky_isaac_sim/meshes" />
+  <xacro:arg name="path_mesh_accessories" default="package://husky_isaac_sim/meshes" />
 
   <xacro:include filename="$(find husky_isaac_sim)/urdf/husky_macro.urdf.xacro" />
 
   <!-- Load husky description -->
-  <xacro:husky prefix="$(arg prefix)" path_meshes="$(arg path_meshes)" path_mesh_realsense="$(arg path_mesh_realsense)" />
+  <xacro:husky prefix="$(arg prefix)" path_meshes="$(arg path_meshes)" path_mesh_accessories="$(arg path_mesh_accessories)" />
 
   <!-- Optional custom includes. -->
   <xacro:include filename="$(arg urdf_extras)" />

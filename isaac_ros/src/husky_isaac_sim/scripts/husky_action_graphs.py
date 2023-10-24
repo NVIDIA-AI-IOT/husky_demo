@@ -154,70 +154,39 @@ def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_stag
     )
 
 
-def build_camera_graph(robot_name,type_output):
-    
-    camera_color_stage_path = f"/{robot_name}/camera_color_optical_frame/camera_color"
-    # Creating a Camera prim
-    camera_color_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_color_stage_path, "Camera"))
-    xform_api = UsdGeom.XformCommonAPI(camera_color_prim)
-    #xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
-    xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    #camera_color_prim.GetHorizontalApertureAttr().Set(21)
-    #camera_color_prim.GetVerticalApertureAttr().Set(16)
-    #camera_color_prim.GetProjectionAttr().Set("perspective")
-    #camera_color_prim.GetFocalLengthAttr().Set(24)
-    #camera_color_prim.GetFocusDistanceAttr().Set(400)
+def build_camera_graph(robot_name):
 
-    camera_depth_stage_path = f"/{robot_name}/camera_depth_optical_frame/camera_depth"
+    camera_left_stage_path = f"/{robot_name}/zed_camera_center/camera_left"
     # Creating a Camera prim
-    camera_depth_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_depth_stage_path, "Camera"))
-    xform_api = UsdGeom.XformCommonAPI(camera_depth_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0.1, 0, 0))
-    #xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    xform_api.SetRotate((0, 0, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    #xform_api.SetRotate((90, -90, 0), UsdGeom.XformCommonAPI.RotationOrderZYX)
-    camera_depth_prim.GetHorizontalApertureAttr().Set(2.0955)
-    camera_depth_prim.GetVerticalApertureAttr().Set(1.1769)
-    camera_depth_prim.GetClippingRangeAttr().Set((0.01, 10000))
-    camera_depth_prim.GetProjectionAttr().Set("perspective")
-    camera_depth_prim.GetVisibilityAttr().Set("invisible")
-    camera_depth_prim.GetFocalLengthAttr().Set(2.4)
-    camera_depth_prim.GetFocusDistanceAttr().Set(4)
-
-    camera_infra1_stage_path = f"/{robot_name}/camera_infra1_optical_frame/camera_infra1"
-    # Creating a Camera prim
-    camera_infra1_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra1_stage_path, "Camera"))
-    xform_api = UsdGeom.XformCommonAPI(camera_infra1_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0.1, 0, 0))
-    #xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    xform_api.SetRotate((0, 0, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    #xform_api.SetRotate((90, -90, 0), UsdGeom.XformCommonAPI.RotationOrderZYX)
-    camera_infra1_prim.GetHorizontalApertureAttr().Set(2.0955)
-    camera_infra1_prim.GetVerticalApertureAttr().Set(1.1769)
-    camera_infra1_prim.GetClippingRangeAttr().Set((0.01, 10000))
-    camera_infra1_prim.GetProjectionAttr().Set("perspective")
-    camera_infra1_prim.GetVisibilityAttr().Set("invisible")
-    camera_infra1_prim.GetFocalLengthAttr().Set(2.4)
-    camera_infra1_prim.GetFocusDistanceAttr().Set(4)
+    camera_left_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_left_stage_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_left_prim)
+    xform_api.SetTranslate(Gf.Vec3d(0.103, 0.06, 0)) # 0.103 - 0.06 - 0.3095
+    xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    camera_left_prim.GetHorizontalApertureAttr().Set(2.0955)
+    camera_left_prim.GetVerticalApertureAttr().Set(1.1769)
+    camera_left_prim.GetClippingRangeAttr().Set((0.01, 10000))
+    camera_left_prim.GetProjectionAttr().Set("perspective")
+    camera_left_prim.GetVisibilityAttr().Set("invisible")
+    camera_left_prim.GetFocalLengthAttr().Set(2.4)
+    camera_left_prim.GetFocusDistanceAttr().Set(4)
     
-    camera_infra2_stage_path = f"/{robot_name}/camera_infra2_optical_frame/camera_infra2"
+    camera_right_stage_path = f"/{robot_name}/zed_camera_center/camera_right"
     # Creating a Camera prim
-    camera_infra2_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_infra2_stage_path, "Camera"))
-    xform_api = UsdGeom.XformCommonAPI(camera_infra2_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0.1, 0, 0))
-    #xform_api.SetRotate((0, -180, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    xform_api.SetRotate((0, 0, -180), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    #xform_api.SetRotate((90, -90, 0), UsdGeom.XformCommonAPI.RotationOrderZYX)
-    camera_infra2_prim.GetHorizontalApertureAttr().Set(2.0955)
-    camera_infra2_prim.GetVerticalApertureAttr().Set(1.1769)
-    camera_infra2_prim.GetClippingRangeAttr().Set((0.01, 10000))
-    camera_infra2_prim.GetProjectionAttr().Set("perspective")
-    camera_infra2_prim.GetVisibilityAttr().Set("invisible")
-    camera_infra2_prim.GetFocalLengthAttr().Set(2.4)
-    camera_infra2_prim.GetFocusDistanceAttr().Set(4)
+    camera_right_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_right_stage_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_right_prim)
+    xform_api.SetTranslate(Gf.Vec3d(0.103, -0.06, 0)) # 0.103 - -0.06 - 0.3095
+    xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    camera_right_prim.GetHorizontalApertureAttr().Set(2.0955)
+    camera_right_prim.GetVerticalApertureAttr().Set(1.1769)
+    camera_right_prim.GetClippingRangeAttr().Set((0.01, 10000))
+    camera_right_prim.GetProjectionAttr().Set("perspective")
+    camera_right_prim.GetVisibilityAttr().Set("invisible")
+    camera_right_prim.GetFocalLengthAttr().Set(2.4)
+    camera_right_prim.GetFocusDistanceAttr().Set(4)
     # Create rgb camera
-    create_camera_rgb_depth(robot_name, 1, "camera_infra1_optical_frame", camera_infra1_stage_path, "left")
-    create_camera(robot_name, 2, "camera_infra2_optical_frame", camera_infra2_stage_path, "right", stereo_offset=[-50.0, 0])
+    create_camera_rgb_depth(robot_name, 1, "zed_left_camera_frame", camera_left_stage_path, "left")
+    create_camera(robot_name, 2, "zed_right_camera_frame", camera_right_stage_path, "right", stereo_offset=[-175.92, 0])
+
 
 def build_differential_controller_graph(robot_name):   
     # Creating a action graph with ROS component nodes
@@ -312,12 +281,36 @@ def build_differential_controller_graph(robot_name):
     HUSKY_STAGE_WHEELS_PATH=[f"/{robot_name}/front_left_wheel", f"/{robot_name}/front_right_wheel", f"/{robot_name}/rear_left_wheel", f"/{robot_name}/rear_right_wheel"]
     set_target_prims(
         primPath=f"/{robot_name}/ActionGraph/ROS2PublishTransformTree",
-        inputName="inputs:targetPrims",
-        targetPrimPaths=HUSKY_STAGE_WHEELS_PATH,
-    )
-    set_target_prims(
-        primPath=f"/{robot_name}/ActionGraph/ROS2PublishTransformTree",
         inputName="inputs:parentPrim",
         targetPrimPaths=[HUSKY_STAGE_PATH],
     )
+    set_target_prims(
+        primPath=f"/{robot_name}/ActionGraph/ROS2PublishTransformTree",
+        inputName="inputs:targetPrims",
+        targetPrimPaths=HUSKY_STAGE_WHEELS_PATH,
+    )
+
+
+def build_clock_graph():
+    try:
+        (ros_camera_graph, _, _, _) = og.Controller.edit(
+            {
+                "graph_path": f"/Clock",
+                "evaluator_name": "execution",
+                "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION
+            },
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("IsaacReadSimulationTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("ROS2PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "ROS2PublishClock.inputs:execIn"),
+                    ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishClock.inputs:timeStamp"),
+                ]
+            },
+        )
+    except Exception as e:
+        print(e)
 # EOF
