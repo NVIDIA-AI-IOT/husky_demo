@@ -36,9 +36,7 @@ LOCAL_PATH = "/workspaces/isaac_ros-dev"
 
 def generate_launch_description():
 
-    #pkg_description = get_package_share_directory('carter_description')
     bringup_dir = get_package_share_directory('nvblox_examples_bringup')
-    #pkg_isaac_demo = get_package_share_directory('isaac_demo')
 
     use_sim_time = LaunchConfiguration('use_sim_time',
                                        default='True')
@@ -101,6 +99,8 @@ def generate_launch_description():
         default_value='0.01',
         description='The desired resolution of the occupancy grid, in m/cell')
 
+    global_frame = LaunchConfiguration('global_frame', default='odom')
+
     ############# ROS2 NODES #############
     ############# ISAAC ROS NODES ########
 
@@ -132,8 +132,8 @@ def generate_launch_description():
             'enable_debug_mode': False,
             'enable_imu': False,
             'debug_dump_path': '/tmp/cuvslam',
-            'left_camera_frame': 'camera_infra1_optical_frame',
-            'right_camera_frame': 'camera_infra2_optical_frame',
+            'left_camera_frame': 'zed_left_camera_frame',
+            'right_camera_frame': 'zed_right_camera_frame',
             'map_frame': 'map',
             'fixed_frame': 'odom',
             'odom_frame': 'odom',
@@ -152,8 +152,9 @@ def generate_launch_description():
         }]
     )
 
+    shared_container_name = "shared_nvblox_container"
     isaac_ros_launch_container = ComposableNodeContainer(
-        name='isaac_ros_launch_container',
+        name=shared_container_name,
         namespace='',
         package='rclcpp_components',
         executable='component_container',
@@ -166,15 +167,21 @@ def generate_launch_description():
 
     ############# OTHER ROS2 NODES #######
 
+    # Nav2
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
-            bringup_dir, 'launch', 'nav2', 'nav2_isaac_sim.launch.py')))
+            bringup_dir, 'launch', 'nav2', 'nav2_isaac_sim.launch.py')),
+        launch_arguments={'global_frame': global_frame}.items())
 
     # Nvblox
     nvblox_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(bringup_dir, 'launch', 'nvblox', 'nvblox.launch.py')]),
-        launch_arguments={'setup_for_isaac_sim': 'True'}.items())
+        launch_arguments={'global_frame': global_frame,
+                          'setup_for_dynamics': 'True',
+                          'setup_for_isaac_sim': 'True', 
+                          'attach_to_shared_component_container': 'True',
+                          'component_container_name': shared_container_name}.items())
 
     ############################
 
@@ -190,9 +197,8 @@ def generate_launch_description():
     ld.add_action(grid_height_arg)
     ld.add_action(grid_width_arg)
     ld.add_action(grid_resolution_arg)
-    # Isaac ROS container
+    # Isaac ROS container (vSLAM and NVBLOX)
     ld.add_action(isaac_ros_launch_container)
-    # vSLAM and NVBLOX
     ld.add_action(nvblox_launch)
     # Navigation tool
     ld.add_action(nav2_launch)
