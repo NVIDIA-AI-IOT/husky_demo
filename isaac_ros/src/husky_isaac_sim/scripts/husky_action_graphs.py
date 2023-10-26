@@ -28,6 +28,8 @@ import omni.graph.core as og
 from omni.isaac.core.utils import stage
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf, UsdGeom
+from omni.kit import commands
+from pxr import Sdf, Usd
 from omni.isaac.core.utils.prims import set_targets
 
 def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
@@ -264,10 +266,10 @@ def build_differential_controller_graph(robot_name):
                     ("MakeArray.inputs:arraySize", 4),
                     ("MakeArray_02.inputs:arraySize", 4),
                     # Assigning topic name to clock publisher
-                    ("ConstantToken_01.inputs:value", "rear_right_wheel_joint"),
-                    ("ConstantToken_02.inputs:value", "rear_left_wheel_joint"),
-                    ("ConstantToken_03.inputs:value", "front_right_wheel_joint"),
-                    ("ConstantToken_04.inputs:value", "front_left_wheel_joint"),
+                    ("ConstantToken_04.inputs:value", "rear_right_wheel_joint"),
+                    ("ConstantToken_03.inputs:value", "rear_left_wheel_joint"),
+                    ("ConstantToken_02.inputs:value", "front_right_wheel_joint"),
+                    ("ConstantToken_01.inputs:value", "front_left_wheel_joint"),
                 ]
             },
         )
@@ -289,6 +291,10 @@ def build_differential_controller_graph(robot_name):
         inputName="inputs:targetPrims",
         targetPrimPaths=HUSKY_STAGE_WHEELS_PATH,
     )
+    # Change stiffness and damping
+    for joint in ["front_left_wheel", "front_right_wheel", "rear_left_wheel", "rear_right_wheel"]:
+        omni.kit.commands.execute('ChangeProperty', prop_path=Sdf.Path(f"{HUSKY_STAGE_PATH}/{joint}_joint.drive:angular:physics:damping"), value=17453.0, prev=0.0)
+        omni.kit.commands.execute('ChangeProperty', prop_path=Sdf.Path(f"{HUSKY_STAGE_PATH}/{joint}_joint.drive:angular:physics:stiffness"), value=0.0, prev=0.0)
 
 
 def build_clock_graph():

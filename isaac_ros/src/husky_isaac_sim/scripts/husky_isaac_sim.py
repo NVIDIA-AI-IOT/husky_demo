@@ -51,12 +51,10 @@ simulation_app.update()
 # Note that this is not the system level rclpy, but one compiled for omniverse
 import rclpy
 from std_msgs.msg import String
-from geometry_msgs.msg import Twist
 from rclpy.node import Node
 
 
 PATH_LOCAL_URDF_FOLDER="/tmp/robot.urdf"
-simulation_context = None
 
 class IsaacWorld():
     
@@ -80,9 +78,6 @@ class IsaacWorld():
             self.simulation_context.initialize_physics()
         # Build clock graph
         build_clock_graph()
-        # TEMP share simulation context
-        global simulation_context
-        simulation_context = self.simulation_context
         # Wait two frames so that stage starts loading
         simulation_app.update()
         simulation_app.update()
@@ -124,8 +119,6 @@ class RobotLoader(Node):
         # setup the ROS2 subscriber here
         self.ros_sub = self.create_subscription(String, "isaac_description", self.callback_description, 1)
         self.ros_sub  # prevent unused variable warning
-        # self.ros_sub_vel = self.create_subscription(Twist, "cmd_vel", self.callback_test, 1)
-        # self.ros_sub_vel  # prevent unused variable warning
         # Node started
         self.get_logger().info("Robot loader start")
 
@@ -190,8 +183,6 @@ if __name__ == "__main__":
     # Run simulation
     isaac_world.run_simulation(robot_loader)
     # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     robot_loader.destroy_node()
     rclpy.shutdown()
 # EOF
