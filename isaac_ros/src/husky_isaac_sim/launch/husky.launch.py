@@ -36,6 +36,7 @@ LOCAL_PATH = "/workspaces/isaac_ros-dev"
 
 def generate_launch_description():
 
+    husky_isaac_sim_dir = get_package_share_directory('husky_isaac_sim')
     bringup_dir = get_package_share_directory('nvblox_examples_bringup')
 
     use_sim_time = LaunchConfiguration('use_sim_time',
@@ -176,10 +177,9 @@ def generate_launch_description():
     # Nvblox
     nvblox_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
-            os.path.join(bringup_dir, 'launch', 'nvblox', 'nvblox.launch.py')]),
+            os.path.join(husky_isaac_sim_dir, 'launch', 'nvblox.launch.py')]),
         launch_arguments={'global_frame': global_frame,
                           'setup_for_dynamics': 'True',
-                          'setup_for_isaac_sim': 'True', 
                           'attach_to_shared_component_container': 'True',
                           'component_container_name': shared_container_name}.items())
 
