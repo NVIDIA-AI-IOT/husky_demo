@@ -1,5 +1,7 @@
 # Husky Demo
 
+![husky 3D mapping](.docs/husky-IsaacSIM-warehouse.png)
+
 ## Hardware required
 
 Workstation:
@@ -14,7 +16,7 @@ Workstation:
 
 NVIDIA Jetson:
 
-1. NVIDIA Jetson AGX Orin
+1. NVIDIA Jetson Orin Nano
 2. Jetpack 5.1.2
 
 Tools:
@@ -22,7 +24,15 @@ Tools:
 1. Router
 2. eth cables
 
-## Install ROS2 Humble
+## Setup hardware and installation
+
+Before to start check you have all requirements and connect the driver following this image
+
+![hardware-setup](.docs/hardware-setup.drawio.png)
+
+It is preferable to connect workstation and the NVIDIA Jetson Orin Nano with a lan cable and not use WiFi.
+
+### Install ROS2 Humble on Desktop
 
 Follow the Isaac SIM 2023 official documentation and check or install ROS2 Humble on your desktop [Running native ROS](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html?highlight=native%20ros#running-native-ros).
 
@@ -42,9 +52,36 @@ Install vision_msgs_package
 sudo apt install ros-humble-vision-msgs
 ```
 
-## Install Husky Demo
+### Install Husky Demo on your workstation
 
-Clone this repository and move to repository folder
+Clone this repository
+
+```console
+git clone https://github.com/NVIDIA-AI-IOT/husky_demo.git
+cd husky_demo
+```
+
+Run this script that is also the installer for your workstation on all tools
+
+```console
+./husky_demo.sh
+```
+
+### Install Husky Demo on NVIDIA Jetson
+
+In this section you connect to your NVIDIA Jetson with a ssh connection, open a terminal an write
+
+```console
+ssh <IP or hostname.local>
+```
+
+where **IP** is the of NVIDIA Jetson or **hostname** is the hostname of your board.
+
+If you are connected the output from the terminal is:
+
+![ssh-terminal-orin.png](.docs/ssh-terminal-orin.png)
+
+Clone this repository
 
 ```console
 git clone https://github.com/NVIDIA-AI-IOT/husky_demo.git
@@ -79,7 +116,7 @@ Then restart the Docker service, or reboot your system before proceeding:
 sudo systemctl restart docker
 ```
 
-Run the installer
+Run the installer and run script
 
 ```console
 ./husky_demo.sh
@@ -87,6 +124,74 @@ Run the installer
 
 ## Run demo
 
+Now you can run your Husky demo, but you need to follow the steps below
+
+### Run on your workstation
+
+On the second terminal run, like the message appeared
+
+```console
+ros2 launch husky_isaac_sim robot_display.launch.py
+```
+
+This script will load husky on Isaac SIM and open rviz on your terminal
+
+![husky-isaac-sim](.docs/husky-running.png)
+
+If you want, you can redock manually all viewports and obtain something like that
+
+![husky-redock](.docs/husky-redock-isaac-sim.png)
+
+### Script to run on your Jetson Nano
+
+If everthing went well from the [installation](#install-husky-demo-on-nvidia-jetson), you can run the command below
+
 ```console
 bash src/husky_isaac_sim/scripts/run_in_docker.sh
 ```
+
+now you will see husky mapping on your rviz
+
+![husky-rviz](.docs/husky-rviz.png)
+
+## Drive Husky
+
+There are several options:
+
+1. Drive by keyboard
+2. Drive by joystick
+3. Drive with Nav2
+
+Follow below all options
+
+### Drive by keyboard
+
+Open a new terminal and run
+
+```console
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+if this package is not available, install
+
+```console
+sudo apt install ros-humble-teleop-twist-keyboard
+```
+
+### Drive by joystick
+
+Open a new terminal and run
+
+```console
+ros2 run teleop_twist_joy teleop_twist_joy
+```
+
+if this package is not available, install
+
+```console
+sudo apt install ros-humble-teleop-twist-joy
+```
+
+### Drive with Nav2
+
+You can simply use rviz2 and press "Goal to pose" to select a new goal for Husky to achieve.
