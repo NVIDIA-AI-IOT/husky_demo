@@ -31,6 +31,7 @@ from launch.actions import DeclareLaunchArgument
 
 
 def generate_launch_description():
+    husky_description = FindPackageShare("husky_description")
     husky_isaac_sim = FindPackageShare("husky_isaac_sim")
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
@@ -42,17 +43,19 @@ def generate_launch_description():
 
     # Get URDF via xacro
     xacro_path = PathJoinSubstitution([husky_isaac_sim, "urdf", "husky.isaac.xacro"])
-    
-    # Load host path
-    host_path = open("/workspaces/isaac_ros-dev/src/host_path", 'r').readline().rstrip('\n')
-    path_meshes = f"{host_path}/isaac_ros/src/husky/husky_description/meshes"
-    path_mesh_accessories = f"{host_path}/isaac_ros/src/husky_isaac_sim/meshes"
+
+    path_meshes = PathJoinSubstitution([husky_description, "meshes"])
+    path_mesh_accessories = PathJoinSubstitution([husky_isaac_sim, "meshes"])
+    # Load host path (Only for Docker)
+    #host_path = open("/workspaces/isaac_ros-dev/src/host_path", 'r').readline().rstrip('\n')
+    #path_meshes = f"{host_path}/isaac_ros/src/husky/husky_description/meshes"
+    #path_mesh_accessories = f"{host_path}/isaac_ros/src/husky_isaac_sim/meshes"
 
     # Launch Robot State Publisher
     isaac_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        output='screen',
+        name="isaac_state_publisher",
         parameters=[{'use_sim_time': use_sim_time,
                      'robot_description': Command(
                          [
@@ -67,6 +70,7 @@ def generate_launch_description():
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
+        name="robot_state_publisher",
         output='screen',
         parameters=[{'use_sim_time': use_sim_time,
                      'robot_description': Command(

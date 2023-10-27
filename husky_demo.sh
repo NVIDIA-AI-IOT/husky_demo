@@ -107,13 +107,21 @@ workstation_install()
     unset LD_LIBRARY_PATH
 
     source /opt/ros/humble/setup.bash
+
+    if [ ! -d $ISAAC_ROS_PATH/install ] ; then
+        echo " - ${green}Build Husky demo packages ${reset}"
+        cd $ISAAC_ROS_PATH
+        colcon build --symlink-install --merge-install --packages-up-to nvblox_rviz_plugin husky_isaac_sim husky_description xacro
+        cd $PROJECT_PATH
+    fi
+
+    # Load host path (Only for Docker)
     # Load host path, this is used to share the same path between host and container for Isaac SIM
     # this is required to load the same urdf meshes
-    echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
-
-    echo " - ${green}Run Isaac ROS and Husky${reset}"
-    cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
-    gnome-terminal -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
+    # echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
+    # echo " - ${green}Run Isaac ROS and Husky${reset}"
+    # cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
+    # gnome-terminal -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
 
     # https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox/blob/main/docs/tutorial-isaac-sim.md
     # Run Isaac ROS with Carter in a Warehouse

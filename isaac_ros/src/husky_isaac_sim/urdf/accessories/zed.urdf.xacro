@@ -131,5 +131,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
             <link name="${camera_name}_temp_right_link" />
         </xacro:if>
+
+<!-- ZED depth -->
+        <joint name="${camera_name}_left_depth_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+            <parent link="${camera_name}_left_camera_frame"/>
+            <child link="${camera_name}_left_depth_frame"/>
+        </joint>
+
+        <link name="${camera_name}_left_depth_frame"/>
     </xacro:macro>
 </robot>

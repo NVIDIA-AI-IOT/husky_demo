@@ -91,7 +91,7 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
     )
 
 
-def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
+def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_depth_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
     
     ros_camera_graph_path = f"/{robot_name}/ROS_CameraGraph_{camera_name}"
     viewport_name = f"Viewport{number_camera}"
@@ -138,7 +138,7 @@ def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_stag
                 ("cameraHelper.inputs:frameId", f"{camera_frame}"),
                 ("cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/rgb"),
                 ("cameraHelper.inputs:type", f"rgb"),
-                ("cameraDepth.inputs:frameId", f"{camera_frame}"),
+                ("cameraDepth.inputs:frameId", f"{camera_depth_frame}"),
                 ("cameraDepth.inputs:topicName", f"/front/stereo_camera/{camera_name}/depth"),
                 ("cameraDepth.inputs:type", f"depth"),
                 ("cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
@@ -186,8 +186,9 @@ def build_camera_graph(robot_name):
     camera_right_prim.GetFocalLengthAttr().Set(2.4)
     camera_right_prim.GetFocusDistanceAttr().Set(4)
     # Create rgb camera
-    create_camera_rgb_depth(robot_name, 1, "zed_left_camera_frame", camera_left_stage_path, "left")
-    create_camera(robot_name, 2, "zed_right_camera_frame", camera_right_stage_path, "right", stereo_offset=[-175.92, 0])
+    create_camera_rgb_depth(robot_name, 1, "zed_left_depth_frame", "zed_left_depth_frame", camera_left_stage_path, "rgb")
+    create_camera_rgb_depth(robot_name, 2, "zed_left_camera_frame", camera_left_stage_path, "left")
+    create_camera(robot_name, 3, "zed_right_camera_frame", camera_right_stage_path, "right", stereo_offset=[-175.92, 0])
 
 
 def build_differential_controller_graph(robot_name):   

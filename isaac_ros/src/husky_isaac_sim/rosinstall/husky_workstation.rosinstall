@@ -2,6 +2,9 @@
     local-name: isaac_ros_common
     uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common.git
 - git:
+    local-name: isaac_ros_nvblox
+    uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox.git
+- git:
     local-name: husky
     uri: https://github.com/husky/husky.git
 - git:
