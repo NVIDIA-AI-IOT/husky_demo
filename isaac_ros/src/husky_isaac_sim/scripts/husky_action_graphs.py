@@ -47,45 +47,45 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
         },
         {
             keys.CREATE_NODES: [
-                ("OnTick", "omni.graph.action.OnTick"),
-                ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-                ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
-                ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
-                ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
-                ("cameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                (f"{camera_name}_OnTick", "omni.graph.action.OnTick"),
+                (f"{camera_name}_createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                (f"{camera_name}_getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                (f"{camera_name}_setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
+                (f"{camera_name}_setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                (f"{camera_name}_cameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                (f"{camera_name}_cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
             ],
             keys.CONNECT: [
-                ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
-                ("createViewport.outputs:execOut", "setViewportResolution.inputs:execIn"),
-                ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
-                ("createViewport.outputs:viewport", "setViewportResolution.inputs:viewport"),
-                ("setViewportResolution.outputs:execOut", "setCamera.inputs:execIn"),
-                ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
-                ("setCamera.outputs:execOut", "cameraHelper.inputs:execIn"),
-                ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelper.inputs:renderProductPath"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+                (f"{camera_name}_OnTick.outputs:tick", f"{camera_name}_createViewport.inputs:execIn"),
+                (f"{camera_name}_createViewport.outputs:execOut", f"{camera_name}_getRenderProduct.inputs:execIn"),
+                (f"{camera_name}_createViewport.outputs:execOut", f"{camera_name}_setViewportResolution.inputs:execIn"),
+                (f"{camera_name}_createViewport.outputs:viewport", f"{camera_name}_getRenderProduct.inputs:viewport"),
+                (f"{camera_name}_createViewport.outputs:viewport", f"{camera_name}_setViewportResolution.inputs:viewport"),
+                (f"{camera_name}_setViewportResolution.outputs:execOut", f"{camera_name}_setCamera.inputs:execIn"),
+                (f"{camera_name}_getRenderProduct.outputs:renderProductPath", f"{camera_name}_setCamera.inputs:renderProductPath"),
+                (f"{camera_name}_setCamera.outputs:execOut", f"{camera_name}_cameraHelper.inputs:execIn"),
+                (f"{camera_name}_setCamera.outputs:execOut", f"{camera_name}_cameraHelperInfo.inputs:execIn"),
+                (f"{camera_name}_getRenderProduct.outputs:renderProductPath", f"{camera_name}_cameraHelper.inputs:renderProductPath"),
+                (f"{camera_name}_getRenderProduct.outputs:renderProductPath", f"{camera_name}_cameraHelperInfo.inputs:renderProductPath"),
             ],
             keys.SET_VALUES: [
-                ("createViewport.inputs:name", viewport_name),
-                ("createViewport.inputs:viewportId", number_camera),
-                ("setViewportResolution.inputs:width", 640),
-                ("setViewportResolution.inputs:height", 480),
-                ("cameraHelper.inputs:frameId", f"{camera_frame}"),
-                ("cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/rgb"),
-                ("cameraHelper.inputs:type", f"rgb"),
-                ("cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
-                ("cameraHelperInfo.inputs:topicName", f"/front/stereo_camera/{camera_name}/camera_info"),
-                ("cameraHelperInfo.inputs:type", "camera_info"),
-                ("cameraHelperInfo.inputs:stereoOffset", stereo_offset),
+                (f"{camera_name}_createViewport.inputs:name", viewport_name),
+                (f"{camera_name}_createViewport.inputs:viewportId", number_camera),
+                (f"{camera_name}_setViewportResolution.inputs:width", 640),
+                (f"{camera_name}_setViewportResolution.inputs:height", 480),
+                (f"{camera_name}_cameraHelper.inputs:frameId", f"{camera_frame}"),
+                (f"{camera_name}_cameraHelper.inputs:topicName", f"/front/stereo_camera/{camera_name}/rgb"),
+                (f"{camera_name}_cameraHelper.inputs:type", f"rgb"),
+                (f"{camera_name}_cameraHelperInfo.inputs:frameId", f"{camera_frame}"),
+                (f"{camera_name}_cameraHelperInfo.inputs:topicName", f"/front/stereo_camera/{camera_name}/camera_info"),
+                (f"{camera_name}_cameraHelperInfo.inputs:type", "camera_info"),
+                (f"{camera_name}_cameraHelperInfo.inputs:stereoOffset", stereo_offset),
             ],
         },
     )
 
     set_targets(
-        prim=stage.get_current_stage().GetPrimAtPath(ros_camera_graph_path + "/setCamera"),
+        prim=stage.get_current_stage().GetPrimAtPath(ros_camera_graph_path + f"/{camera_name}_setCamera"),
         attribute="inputs:cameraPrim",
         target_prim_paths=[camera_stage_path],
     )
@@ -187,7 +187,7 @@ def build_camera_graph(robot_name):
     camera_right_prim.GetFocusDistanceAttr().Set(4)
     # Create rgb camera
     create_camera_rgb_depth(robot_name, 1, "zed_left_depth_frame", "zed_left_depth_frame", camera_left_stage_path, "rgb")
-    create_camera_rgb_depth(robot_name, 2, "zed_left_camera_frame", camera_left_stage_path, "left")
+    create_camera(robot_name, 2, "zed_left_camera_frame", camera_left_stage_path, "left")
     create_camera(robot_name, 3, "zed_right_camera_frame", camera_right_stage_path, "right", stereo_offset=[-175.92, 0])
 
 

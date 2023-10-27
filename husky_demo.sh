@@ -115,6 +115,7 @@ workstation_install()
         cd $PROJECT_PATH
     fi
 
+    gnome-terminal -- bash -c "bash -c \"echo 'When Isaac SIM is running execute:';echo 'ros2 launch husky_isaac_sim robot_display.launch.py'; exec bash\""
     # Load host path (Only for Docker)
     # Load host path, this is used to share the same path between host and container for Isaac SIM
     # this is required to load the same urdf meshes

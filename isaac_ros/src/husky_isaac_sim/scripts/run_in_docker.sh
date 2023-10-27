@@ -98,11 +98,7 @@ main()
         fi
     fi
     
-    if [[ $PLATFORM != "aarch64" ]]; then
-        run_desktop
-    else
-        run_jetson
-    fi
+    run_jetson
 }
 
 

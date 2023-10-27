@@ -151,6 +151,10 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        zed_left_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         zed_mag_link:
           Alpha: 1
           Show Axes: false
@@ -180,108 +184,19 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz_default_plugins/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        front_bumper_link:
-          Value: true
-        front_left_wheel:
-          Value: true
-        front_right_wheel:
-          Value: true
-        inertial_link:
-          Value: true
-        odom:
-          Value: true
-        rear_bumper_link:
-          Value: true
-        rear_left_wheel:
-          Value: true
-        rear_right_wheel:
-          Value: true
-        sensor_arch_mount_link:
-          Value: true
-        top_chassis_link:
-          Value: true
-        top_plate_front_link:
-          Value: true
-        top_plate_link:
-          Value: true
-        top_plate_rear_link:
-          Value: true
-        user_rail_link:
-          Value: true
-        zed_baro_link:
-          Value: true
-        zed_camera_center:
-          Value: true
-        zed_left_camera_frame:
-          Value: true
-        zed_left_camera_optical_frame:
-          Value: true
-        zed_mag_link:
-          Value: true
-        zed_right_camera_frame:
-          Value: true
-        zed_right_camera_optical_frame:
-          Value: true
-        zed_temp_left_link:
-          Value: true
-        zed_temp_right_link:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        odom:
-          base_link:
-            front_bumper_link:
-              {}
-            front_left_wheel:
-              {}
-            front_right_wheel:
-              {}
-            inertial_link:
-              {}
-            rear_bumper_link:
-              {}
-            rear_left_wheel:
-              {}
-            rear_right_wheel:
-              {}
-            top_chassis_link:
-              {}
-            top_plate_link:
-              sensor_arch_mount_link:
-                {}
-              top_plate_front_link:
-                {}
-              top_plate_rear_link:
-                {}
-            user_rail_link:
-              {}
-            zed_camera_center:
-              zed_baro_link:
-                {}
-              zed_left_camera_frame:
-                zed_left_camera_optical_frame:
-                  {}
-                zed_temp_left_link:
-                  {}
-              zed_mag_link:
-                {}
-              zed_right_camera_frame:
-                zed_right_camera_optical_frame:
-                  {}
-                zed_temp_right_link:
-                  {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: map
@@ -307,7 +222,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz_default_plugins/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -330,12 +245,12 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /plan
-      Value: true
+      Value: false
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic:
         Depth: 5
@@ -351,7 +266,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /local_costmap/costmap_updates
       Use Timestamp: false
-      Value: true
+      Value: false
     - Ceiling Height: 0
       Class: nvblox_rviz_plugin/NvbloxMesh
       Cut Ceiling: false
