@@ -54,7 +54,7 @@ sudo apt install ros-humble-vision-msgs
 
 ### Install latest NVIDIA Isaac SIM
 
-Follow the documentation on NVIDIA Isaac SIM [Workstation install](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/install_workstation.html)
+Follow the documentation on NVIDIA Isaac SIM [Workstation install](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html)
 
 1. Download the [Omniverse Launcher](https://www.nvidia.com/en-us/omniverse/)
 2. [Install Omniverse Launcher](https://docs.omniverse.nvidia.com/prod_launcher/prod_launcher/installing_launcher.html)
