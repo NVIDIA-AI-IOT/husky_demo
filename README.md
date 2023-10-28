@@ -52,6 +52,23 @@ Install vision_msgs_package
 sudo apt install ros-humble-vision-msgs
 ```
 
+### Install latest NVIDIA Isaac SIM
+
+Follow the documentation on NVIDIA Isaac SIM [Workstation install](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/install_workstation.html)
+
+1. Download the [Omniverse Launcher](https://www.nvidia.com/en-us/omniverse/)
+2. [Install Omniverse Launcher](https://docs.omniverse.nvidia.com/prod_launcher/prod_launcher/installing_launcher.html)
+3. Install [Cache](https://docs.omniverse.nvidia.com/prod_nucleus/prod_utilities/cache/installation/workstation.html) from the Omniverse Launcher
+4. Install [Nucleus](https://docs.omniverse.nvidia.com/prod_nucleus/prod_nucleus/workstation/installation.html) from the Omniverse Launcher
+
+Open Omniverse Launcher
+
+![Omniverse launcher](https://docs.omniverse.nvidia.com/isaacsim/latest/_images/isaac_main_launcher_exchange.png)
+
+Move to Library and choice "Omniverse Isaac SIM" and download the latest 2023.1.0 version
+
+![Omniverse library](https://docs.omniverse.nvidia.com/isaacsim/latest/_images/isaac_main_launcher_library.png)
+
 ### Install Husky Demo on your workstation
 
 Clone this repository
