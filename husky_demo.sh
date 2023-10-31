@@ -1,5 +1,6 @@
 #!/bin/bash
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -13,7 +14,7 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -25,11 +26,10 @@ green=`tput setaf 2`
 yellow=`tput setaf 3`
 reset=`tput sgr0`
 
-RVIZ_RUN=false
+ALL_RUN=false
 FOXGLOVE_RUN=false
 # Requested version to install this set of demo on Jetson
 ISAAC_DEMO_ROS_L4T="35.3" # 35.1 = Jetpack 5.0.2
-# ISAAC_SIM_VERSION="prod-isaac_sim-2022.2.1"  # Isaac SIM version
 ISAAC_SIM_VERSION="prod-isaac_sim-2023.1.0"  # Isaac SIM version
 
 # DO NOT EDIT
@@ -55,6 +55,7 @@ usage()
     echo "$name [options]" >&2
     echo "${bold}options:${reset}" >&2
     echo "   -y                   | Run this script silent" >&2
+    echo "   --all                | Run everthing on this workstation (Isaac SIM and Isaac ROS)" >&2
     echo "   --rviz               | Run rviz2 on desktop (default)" >&2
     echo "   --foxglove           | Run foxglove on desktop" >&2
     echo "   --skip-install       | Skip installing and just run the demo" >&2
@@ -83,7 +84,6 @@ pull_isaac_ros_packages()
 
 workstation_install()
 {
-
     if [ -z ${SKIP_INSTALL+x} ] ; then
         if [ ! -d $ISAAC_SIM_PATH ] ; then
             echo "${bold}${red}Install Isaac SIM $ISAAC_SIM_VERSION on your workstation${reset}"
@@ -102,28 +102,36 @@ workstation_install()
         fi
 
         pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_workstation.rosinstall
+        if $ALL_RUN ; then
+            pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_robot.rosinstall
+        fi
     fi
 
     unset LD_LIBRARY_PATH
 
-    source /opt/ros/humble/setup.bash
+    if $ALL_RUN ; then
+        # Run everything from workstation
+        # Load host path (Only for Docker)
+        # Load host path, this is used to share the same path between host and container for Isaac SIM
+        # this is required to load the same urdf meshes
+        echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
+        echo " - ${green}Run Isaac ROS and Husky${reset}"
+        cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
+        gnome-terminal -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
+    else
 
-    if [ ! -d $ISAAC_ROS_PATH/install ] ; then
-        echo " - ${green}Build Husky demo packages ${reset}"
-        cd $ISAAC_ROS_PATH
-        colcon build --symlink-install --merge-install --packages-up-to nvblox_rviz_plugin husky_isaac_sim husky_description xacro
-        cd $PROJECT_PATH
+        if [ ! -d $ISAAC_ROS_PATH/install ] ; then
+            echo " - ${green}Build Husky demo packages ${reset}"
+            cd $ISAAC_ROS_PATH
+            colcon build --symlink-install --merge-install --packages-up-to nvblox_rviz_plugin husky_isaac_sim husky_description xacro
+            cd $PROJECT_PATH
+        fi
+        gnome-terminal -- bash -c "bash -c \"source $ISAAC_ROS_PATH/install/setup.bash;echo 'When Isaac SIM is running execute:';echo 'ros2 launch husky_isaac_sim robot_display.launch.py'; exec bash\""
     fi
 
-    gnome-terminal -- bash -c "bash -c \"source $ISAAC_ROS_PATH/install/setup.bash;echo 'When Isaac SIM is running execute:';echo 'ros2 launch husky_isaac_sim robot_display.launch.py'; exec bash\""
-    # Load host path (Only for Docker)
-    # Load host path, this is used to share the same path between host and container for Isaac SIM
-    # this is required to load the same urdf meshes
-    # echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
-    # echo " - ${green}Run Isaac ROS and Husky${reset}"
-    # cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
-    # gnome-terminal -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
 
+    # Run just rviz and robot description on workstation
+    source /opt/ros/humble/setup.bash
     # https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox/blob/main/docs/tutorial-isaac-sim.md
     # Run Isaac ROS with Carter in a Warehouse
     echo " - ${green}Start Isaac SIM ${bold}$ISAAC_SIM_VERSION${reset}"
@@ -189,8 +197,8 @@ main()
             --rviz)
                 RVIZ_RUN=true
                 ;;
-            --foxglove)
-                FOXGLOVE_RUN=true
+            --all)
+                ALL_RUN=true
                 ;;
             --skip-install)
                 SKIP_INSTALL=true

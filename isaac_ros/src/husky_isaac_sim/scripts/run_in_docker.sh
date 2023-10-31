@@ -1,5 +1,6 @@
 #!/bin/bash
-# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -13,7 +14,7 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -41,14 +42,14 @@ run_desktop()
 
     if [ ! -d $LOCAL_PATH/install ] ; then
         echo " - ${green}Build Isaac ROS${reset}"
-        colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot
+        colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot husky_msgs husky_navigation
     fi
     
     echo " - ${green}Run rviz2 and husky push on Isaac SIM${reset}"
     # source workspace
     source install/setup.bash
     # Run demo
-    ros2 launch husky_isaac_sim robot_display.launch.py
+    ros2 launch husky_isaac_sim allinone.launch.py
 }
 
 run_jetson()

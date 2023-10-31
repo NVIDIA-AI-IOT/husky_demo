@@ -1,5 +1,3 @@
-<?xml version="1.0"?>
-<!--
 # SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
@@ -20,27 +18,31 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
--->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-    <name>husky_isaac_sim</name>
-    <version>0.1.0</version>
-    <description>NVIDIA Isaac SIM and Husky demo launch</description>
 
-    <author email="rbonghi@nvidia.com">Raffaello Bonghi</author>
-    <maintainer email="rbonghi@nvidia.com">Raffaello Bonghi</maintainer>
-    <license>MIT</license>
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch import LaunchDescription
 
-    <url type="website">https://developer.nvidia.com/isaac-ros</url>
-    <url type="repository">https://github.com/NVIDIA-AI-IOT/husky_demo</url>
-    <url type="bugtracker">https://github.com/NVIDIA-AI-IOT/husky_demo/issues</url>
+def generate_launch_description():
 
-    <buildtool_depend>ament_cmake</buildtool_depend>
+    husky_isaac_sim_dir = get_package_share_directory('husky_isaac_sim')
 
-    <test_depend>ament_lint_auto</test_depend>
-    <test_depend>ament_lint_common</test_depend>
+    robot_display_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            husky_isaac_sim_dir, 'launch', 'robot_display.launch.py')))
 
-    <export>
-        <build_type>ament_cmake</build_type>
-    </export>
-</package>
+    husky_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            husky_isaac_sim_dir, 'launch', 'robot_display.launch.py')))
+
+    # Launch ROS2 packages
+    ld = LaunchDescription()
+    # robot_display
+    ld.add_action(robot_display_launch)
+    # husky launch
+    ld.add_action(husky_launch)
+
+    return ld
+# EOF

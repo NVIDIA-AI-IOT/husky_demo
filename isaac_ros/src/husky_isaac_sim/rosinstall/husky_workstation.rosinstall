@@ -6,6 +6,7 @@
     uri: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox.git
 - git:
     local-name: husky
+    version: humble-devel
     uri: https://github.com/husky/husky.git
 - git:
     local-name: xacro
