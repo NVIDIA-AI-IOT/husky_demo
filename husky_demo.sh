@@ -125,6 +125,9 @@ workstation_install()
         # Pass reference to Docker
         echo ">>> $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH"
     else
+        # Run just rviz and robot description on workstation
+        source /opt/ros/humble/setup.bash
+        # Build packages
         if [ ! -d $ISAAC_ROS_PATH/install ] ; then
             echo " - ${green}Build Husky demo packages ${reset}"
             cd $ISAAC_ROS_PATH
@@ -132,8 +135,6 @@ workstation_install()
             cd $PROJECT_PATH
         fi
         gnome-terminal -- bash -c "bash -c \"source $ISAAC_ROS_PATH/install/setup.bash;echo 'When Isaac SIM is running execute:';echo 'ros2 launch husky_isaac_sim robot_display.launch.py'; exec bash\""
-        # Run just rviz and robot description on workstation
-        source /opt/ros/humble/setup.bash
     fi
 
     # https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox/blob/main/docs/tutorial-isaac-sim.md
