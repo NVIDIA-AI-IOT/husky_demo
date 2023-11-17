@@ -26,7 +26,7 @@ green=`tput setaf 2`
 yellow=`tput setaf 3`
 reset=`tput sgr0`
 
-ALL_RUN=false
+HIL_DEMO=false
 FOXGLOVE_RUN=false
 # Requested version to install this set of demo on Jetson
 ISAAC_DEMO_ROS_L4T="35.3" # 35.1 = Jetpack 5.0.2
@@ -55,7 +55,8 @@ usage()
     echo "$name [options]" >&2
     echo "${bold}options:${reset}" >&2
     echo "   -y                   | Run this script silent" >&2
-    echo "   --all                | Run everthing on this workstation (Isaac SIM and Isaac ROS)" >&2
+    echo "   --HIL                | Run Isaac ROS from Jetson Orin series" >&2
+    echo "   --reset              | Reset all demo" >&2
     echo "   --rviz               | Run rviz2 on desktop (default)" >&2
     echo "   --foxglove           | Run foxglove on desktop" >&2
     echo "   --skip-install       | Skip installing and just run the demo" >&2
@@ -102,14 +103,14 @@ workstation_install()
         fi
 
         pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_workstation.rosinstall
-        if $ALL_RUN ; then
+        if ! $HIL_DEMO ; then
             pull_isaac_ros_packages $ISAAC_DEMO_LOCAL_PATH/rosinstall/husky_robot.rosinstall
         fi
     fi
 
     unset LD_LIBRARY_PATH
 
-    if $ALL_RUN ; then
+    if ! $HIL_DEMO ; then
         # Run everything from workstation
         # Load host path (Only for Docker)
         # Load host path, this is used to share the same path between host and container for Isaac SIM
@@ -117,27 +118,28 @@ workstation_install()
         echo "$(pwd)" > $ISAAC_ROS_SRC_PATH/host_path
         echo " - ${green}Run Isaac ROS and Husky${reset}"
         cd $ISAAC_ROS_SRC_PATH/isaac_ros_common
-        gnome-terminal -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
+        gnome-terminal  --title="Isaac ROS terminal" -- sh -c "bash -c \"scripts/run_dev.sh $ISAAC_ROS_PATH; exec bash\""
+        # https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html
+        export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ISAAC_SIM_PATH/exts/omni.isaac.ros2_bridge/humble/lib
+        # Pass reference to Docker
+        echo ">>> $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH"
     else
-
         if [ ! -d $ISAAC_ROS_PATH/install ] ; then
             echo " - ${green}Build Husky demo packages ${reset}"
             cd $ISAAC_ROS_PATH
-            colcon build --symlink-install --merge-install --packages-up-to nvblox_rviz_plugin husky_isaac_sim husky_description xacro
+            colcon build --symlink-install --merge-install --packages-up-to nvblox_rviz_plugin husky_isaac_sim husky_description xacro || { echo "${red}ROS build failure!${reset}"; exit 1; }
             cd $PROJECT_PATH
         fi
         gnome-terminal -- bash -c "bash -c \"source $ISAAC_ROS_PATH/install/setup.bash;echo 'When Isaac SIM is running execute:';echo 'ros2 launch husky_isaac_sim robot_display.launch.py'; exec bash\""
+        # Run just rviz and robot description on workstation
+        source /opt/ros/humble/setup.bash
     fi
 
-
-    # Run just rviz and robot description on workstation
-    source /opt/ros/humble/setup.bash
     # https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox/blob/main/docs/tutorial-isaac-sim.md
     # Run Isaac ROS with Carter in a Warehouse
     echo " - ${green}Start Isaac SIM ${bold}$ISAAC_SIM_VERSION${reset}"
     echo "   ${green}Path:${reset} $ISAAC_DEMO_SIMULATION_PATH"
-    # source /opt/ros/foxy/setup.bash
-    echo ">>> $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH"
     $ISAAC_SIM_PATH/python.sh $ISAAC_DEMO_SIMULATION_PATH
 
 }
@@ -186,6 +188,7 @@ main()
 {
     local PLATFORM="$(uname -m)"
     local SILENT=false
+    local RESET=false
 
     # Decode all information from startup
     while [ -n "$1" ]; do
@@ -194,11 +197,14 @@ main()
                 usage
                 exit 0
                 ;;
+            --reset)
+                RESET=true
+                ;;
             --rviz)
                 RVIZ_RUN=true
                 ;;
-            --all)
-                ALL_RUN=true
+            --HIL|--hil)
+                HIL_DEMO=true
                 ;;
             --skip-install)
                 SKIP_INSTALL=true
@@ -213,6 +219,16 @@ main()
         esac
             shift 1
     done
+
+    if $RESET ; then
+        echo "${bold}${red}Reset all demo${reset}"
+        sudo rm -rf $ISAAC_ROS_PATH/build $ISAAC_ROS_PATH/install $ISAAC_ROS_PATH/log
+        sudo rm -rf $ISAAC_ROS_SRC_PATH/isaac_ros_* $ISAAC_ROS_SRC_PATH/joint_state_publisher 
+        sudo rm -rf $ISAAC_ROS_SRC_PATH/robot_state_publisher $ISAAC_ROS_SRC_PATH/realsense-ros
+        sudo rm -rf $ISAAC_ROS_SRC_PATH/xacro $ISAAC_ROS_SRC_PATH/ros-foxglove-bridge
+        sudo rm -rf $ISAAC_ROS_SRC_PATH/host_path
+        exit 0
+    fi
 
     # Recap installatation
     echo "------ Configuration ------"

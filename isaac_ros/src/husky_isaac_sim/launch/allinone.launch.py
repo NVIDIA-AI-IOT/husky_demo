@@ -35,7 +35,7 @@ def generate_launch_description():
 
     husky_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
-            husky_isaac_sim_dir, 'launch', 'robot_display.launch.py')))
+            husky_isaac_sim_dir, 'launch', 'husky.launch.py')))
 
     # Launch ROS2 packages
     ld = LaunchDescription()

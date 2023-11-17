@@ -42,7 +42,7 @@ run_desktop()
 
     if [ ! -d $LOCAL_PATH/install ] ; then
         echo " - ${green}Build Isaac ROS${reset}"
-        colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot husky_msgs husky_navigation
+        colcon build --symlink-install --merge-install --packages-skip husky_base husky_bringup husky_robot husky_msgs husky_desktop || { echo "${red}ROS build failure!${reset}"; exit 1; }
     fi
     
     echo " - ${green}Run rviz2 and husky push on Isaac SIM${reset}"
@@ -99,7 +99,14 @@ main()
         fi
     fi
     
-    run_jetson
+    
+
+    # Run a different installation depend of the architecture
+    if [[ $PLATFORM != "aarch64" ]]; then
+        run_desktop
+    else
+        run_jetson
+    fi
 }
 
 
