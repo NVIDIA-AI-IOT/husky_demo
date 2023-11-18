@@ -22,6 +22,7 @@
 import carb
 from omni.isaac.kit import SimulationApp
 import sys
+import os
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 BACKGROUND_STAGE_PATH = "/background"
@@ -113,7 +114,7 @@ class RobotLoader(Node):
         self.namespace = namespace
         self.isaac_world = isaac_world
         # setup the ROS2 subscriber here
-        self.ros_sub = self.create_subscription(String, "isaac_description", self.callback_description, 1)
+        self.ros_sub = self.create_subscription(String, "robot_description", self.callback_description, 1)
         self.ros_sub  # prevent unused variable warning
         # Node started
         self.get_logger().info("Robot loader start")
@@ -127,25 +128,12 @@ class RobotLoader(Node):
         import_config.import_inertia_tensor = False
         import_config.fix_base = False
         import_config.distance_scale = 1
-
-        # Import URDF, stage_path contains the path to the usd prim in the stage.
-        # extension_path = get_extension_path_from_name("omni.isaac.urdf")
-        dest_path = "/tmp/husky.usd"
         
         status, stage_path = commands.execute(
             "URDFParseAndImportFile",
             urdf_path=PATH_LOCAL_URDF_FOLDER,
             import_config=import_config,
-            #dest_path=dest_path
         )
-        # TODO change start position        
-        #stage_path = get_stage_next_free_path(
-        #    simulation_context.scene.stage,
-        #    "/World" + stage_path,
-        #    False
-        #)
-        #robot_prim = simulation_context.scene.stage.OverridePrim(stage_path)
-        #robot_prim.GetReferences().AddReference(dest_path)
         
         # Wait a step
         self.isaac_world.wait_step_reload()
@@ -157,10 +145,25 @@ class RobotLoader(Node):
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
+        robot_name = "husky"
         print(f"Load robot")
         robot_urdf = msg.data
-        #print(robot_urdf)
-        robot_name = "husky"
+        if os.path.exists("/workspaces/isaac_ros-dev/src/host_path"):
+            print("Running from Docker")
+            # Load host path (Only for Docker)
+            host_path = open("/workspaces/isaac_ros-dev/src/host_path", 'r').readline().rstrip('\n')
+            path_meshes = f"{host_path}/isaac_ros/src/husky/husky_description/meshes"
+            path_mesh_accessories = f"{host_path}/isaac_ros/src/husky_isaac_sim/meshes"
+        else:
+            print("Running from Workstation")
+            # Get the current working directory
+            path_meshes = os.path.join(os.getcwd(), "isaac_ros", "install", "share", "husky_description", "meshes")
+            path_mesh_accessories = os.path.join(os.getcwd(), "isaac_ros", "install", "share", "husky_isaac_sim", "meshes")
+        # Change path meshes for Isaac Sim 
+        # Replace the old_text with new_text
+        robot_urdf = robot_urdf.replace('package://husky_description/meshes', path_meshes)
+        robot_urdf = robot_urdf.replace('package://husky_isaac_sim/meshes', path_mesh_accessories)
+        # Save robot urdf
         text_file = open(PATH_LOCAL_URDF_FOLDER, "w")
         n = text_file.write(robot_urdf)
         text_file.close()
