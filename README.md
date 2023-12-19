@@ -2,6 +2,8 @@
 
 ![husky 3D mapping](.docs/husky-IsaacSIM-warehouse.png)
 
+Tested on Isaac Sim 2023.1.0 and Isaac Sim 2023.1.1
+
 ## Hardware required
 
 Workstation:
@@ -34,7 +36,7 @@ It is preferable to connect workstation and the NVIDIA Jetson Orin Nano with a l
 
 ### Install ROS2 Humble on Desktop
 
-Follow the Isaac SIM 2023 official documentation and check or install ROS2 Humble on your desktop [Running native ROS](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html?highlight=native%20ros#running-native-ros).
+Follow the Isaac Sim 2023 official documentation and check or install ROS2 Humble on your desktop [Running native ROS](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html?highlight=native%20ros#running-native-ros).
 
 In quick steps:
 
@@ -52,9 +54,9 @@ Install vision_msgs_package
 sudo apt install ros-humble-vision-msgs
 ```
 
-### Install latest NVIDIA Isaac SIM
+### Install latest NVIDIA Isaac Sim
 
-Follow the documentation on NVIDIA Isaac SIM [Workstation install](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html)
+Follow the documentation on NVIDIA Isaac Sim [Workstation install](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html)
 
 1. Download the [Omniverse Launcher](https://www.nvidia.com/en-us/omniverse/)
 2. [Install Omniverse Launcher](https://docs.omniverse.nvidia.com/prod_launcher/prod_launcher/installing_launcher.html)
@@ -65,7 +67,7 @@ Open Omniverse Launcher
 
 ![Omniverse launcher](https://docs.omniverse.nvidia.com/isaacsim/latest/_images/isaac_main_launcher_exchange.png)
 
-Move to Library and choice "Omniverse Isaac SIM" and download the latest 2023.1.0 version
+Move to Library and choice "Omniverse Isaac Sim" and download the latest 2023.1.1 version
 
 ![Omniverse library](https://docs.omniverse.nvidia.com/isaacsim/latest/_images/isaac_main_launcher_library.png)
 
@@ -151,7 +153,7 @@ On the second terminal run, like the message appeared
 ros2 launch husky_isaac_sim robot_display.launch.py
 ```
 
-This script will load husky on Isaac SIM and open rviz on your terminal
+This script will load husky on Isaac Sim and open rviz on your terminal
 
 ![husky-isaac-sim](.docs/husky-running.png)
 
@@ -212,3 +214,14 @@ sudo apt install ros-humble-teleop-twist-joy
 ### Drive with Nav2
 
 You can simply use rviz2 and press "Goal to pose" to select a new goal for Husky to achieve.
+
+## Change Isaac Sim version
+
+If you want to change Isaac Sim version on this demo you can simply do:
+
+ * Open `husky_demo.sh` file
+ * On line **33** change `ISAAC_SIM_VERSION` variable with your current version and write: `isaac_sim-<VERSION>`
+
+If you don't know which version you have installed on your workstation open the library on the Isaac Sim page you will find below the button "launch" your current version installed
+
+![version Isaac Sim](.docs/version_isaac_sim.jpeg)
