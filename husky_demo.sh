@@ -30,7 +30,7 @@ HIL_DEMO=false
 FOXGLOVE_RUN=false
 # Requested version to install this set of demo on Jetson
 ISAAC_DEMO_ROS_L4T="35.3" # 35.1 = Jetpack 5.0.2
-ISAAC_SIM_VERSION="prod-isaac_sim-2023.1.0"  # Isaac SIM version
+ISAAC_SIM_VERSION="isaac_sim-2023.1.1"  # Isaac SIM version
 
 # DO NOT EDIT
 
